@@ -300,14 +300,13 @@ footer{text-align:center;margin-top:28px}
       <div class="field"><label for="cognome">Cognome</label><input id="cognome" name="cognome" autocomplete="family-name" required maxlength="60"></div>
     </div>
     <div class="field"><label for="telefono">Telefono <span class="opt">(facoltativo)</span></label><input id="telefono" name="telefono" type="tel" autocomplete="tel" maxlength="30"></div>
+    <div class="field"><label for="contatto">Chi è il tuo contatto? <span class="opt">(chi ti ha mandato il link)</span></label><input id="contatto" name="contatto" required maxlength="60" autocomplete="off"></div>
 
     <div class="sep"></div>
     <h2><span class="n">2</span> Quanti sacchi?</h2>
     <div class="sacks" id="sacks"></div>
 
     <div class="total"><span>Totale <small id="totkg">0 kg</small></span><span id="tot">0 €</span></div>
-
-    <div class="field"><label for="contatto">Chi è il tuo contatto? <span class="opt">(chi ti ha mandato il link)</span></label><input id="contatto" name="contatto" maxlength="60" autocomplete="off"></div>
 
     <div class="field"><label for="note">Note <span class="opt">(facoltative)</span></label><textarea id="note" name="note" rows="2" maxlength="500" placeholder="Vuoi dirmi qualcosa?"></textarea></div>
 
@@ -389,6 +388,7 @@ $('f').addEventListener('submit', async e => {
   e.preventDefault(); $('msg').className='msg';
   const nome=$('nome').value.trim(), cognome=$('cognome').value.trim();
   if(!nome||!cognome) return err('Inserisci nome e cognome.');
+  if(!$('contatto').value.trim()) return err('Scrivi chi ti ha mandato il link.');
   if(!kg()) return err('Scegli almeno un sacco.');
   const btn=$('go'); btn.disabled=true; btn.textContent='Invio in corso…';
   try{
