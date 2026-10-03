@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Castagnacopo – Report ordini</title>
+<link rel="icon" href="logo.svg" type="image/svg+xml"><text y='.9em' font-size='90'>🌰</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f7f1e8;--card:#fffdf9;--ink:#2b1d14;--muted:#7a6656;--line:#e6d9c8;--brand:#7b3f1d;--accent:#c98a3c;--err:#a8322a}
+@media (prefers-color-scheme:dark){:root{--bg:#1b140f;--card:#251b14;--ink:#f3e9dd;--muted:#b9a593;--line:#3a2c21;--brand:#d98b52;--accent:#e0a85a;--err:#f08a80}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:24px 16px 48px}
+h1{font-family:Fraunces,Georgia,serif;font-weight:800;color:var(--brand);margin:0;font-size:clamp(1.6rem,6vw,2.2rem)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.login{max-width:360px;margin:60px auto;text-align:center}
+input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;margin:10px 0}
+.btn{padding:10px 16px;border:0;border-radius:10px;background:var(--brand);color:#fff;font:600 .95rem Inter,sans-serif;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--brand);border:1px solid var(--line)}
+.err{color:var(--err);min-height:1.5em}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:16px}
+.kpi small{color:var(--muted);display:block;font-size:.8rem}
+.kpi b{font-family:Fraunces,Georgia,serif;font-size:1.9rem;line-height:1.1}
+.kpi.main{background:var(--brand);color:#fff;border-color:transparent}
+.kpi.main small{color:#f3dcc7}
+h2{font-family:Fraunces,Georgia,serif;font-size:1.1rem;margin:0 0 10px}
+.sizes{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+@media (max-width:560px){.sizes{grid-template-columns:repeat(2,1fr)}}
+.sz{text-align:center}
+.sz b{font-family:Fraunces,Georgia,serif;font-size:1.6rem;display:block}
+.sz small{color:var(--muted)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.9rem}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);cursor:pointer;user-select:none}
+td.n,th.n{text-align:right}
+td.note{white-space:normal;min-width:160px;color:var(--muted)}
+tfoot td{font-weight:700;border-top:2px solid var(--ink);border-bottom:0}
+.search{max-width:260px;margin:0}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:10px}
+#app{display:none}
+@media print{.noprint{display:none!important}body{background:#fff;color:#000}.card{border:0;padding:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card login" id="login">
+    <img src="logo.svg" width="80" alt="">
+    <h1>Report ordini</h1>
+    <form id="lf"><input id="pw" type="password" placeholder="Password" autocomplete="current-password"><button class="btn" style="width:100%">Entra</button></form>
+    <p class="err" id="le"></p>
+  </div>
+
+  <div id="app">
+    <div class="top">
+      <h1 style="display:flex;align-items:center;gap:10px"><img src="logo.svg" width="44" alt="">Castagnacopo · Report</h1>
+      <div class="noprint" style="display:flex;gap:8px">
+        <button class="btn ghost" id="refresh">Aggiorna</button>
+        <button class="btn ghost" id="csv">Scarica CSV</button>
+        <button class="btn ghost" onclick="print()">Stampa</button>
+      </div>
+    </div>
+
+    <div class="kpis">
+      <div class="card kpi main"><small>Kg totali richiesti</small><b id="kKg">0</b></div>
+      <div class="card kpi main"><small>Incasso previsto</small><b id="kEur">0</b></div>
+      <div class="card kpi"><small>Ordini</small><b id="kOrd">0</b></div>
+      <div class="card kpi"><small>Sacchi totali</small><b id="kSac">0</b></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2>Sacchi da preparare</h2>
+      <div class="sizes" id="sizes"></div>
+    </div>
+
+    <div class="card">
+      <div class="bar"><h2 style="margin:0">Dettaglio ordini</h2><input class="search noprint" id="q" placeholder="Cerca nome…"></div>
+      <div class="tw"><table>
+        <thead><tr>
+          <th data-k="data">Data</th><th data-k="cognome">Cognome</th><th data-k="nome">Nome</th><th data-k="telefono">Telefono</th>
+          <th class="n" data-k="q1">1 kg</th><th class="n" data-k="q3">3 kg</th><th class="n" data-k="q5">5 kg</th><th class="n" data-k="q10">10 kg</th>
+          <th class="n" data-k="kg">Kg</th><th class="n" data-k="euro">Euro</th><th data-k="note">Note</th>
+        </tr></thead>
+        <tbody id="tb"></tbody><tfoot id="tf"></tfoot>
+      </table></div>
+    </div>
+    <p style="color:var(--muted);font-size:.8rem" id="upd"></p>
+  </div>
+</div>
+
+<script>
+// >>> Stesso URL dell'App web usato in index.html <<<
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0vL3szFbifKWk9gxrhQu1z3SU_Bb4As-VRUbYAAYcqGuq3JDfdtm2xBUimVSI2q-2/exec';
+
+const $ = id => document.getElementById(id);
+const eur = n => (n||0).toLocaleString('it-IT',{style:'currency',currency:'EUR'});
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtD = s => { const d=new Date(s); return isNaN(d)?s:d.toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); };
+let orders = [], sortK = 'data', sortDir = -1, key = '';
+try { key = sessionStorage.getItem('ck') || ''; } catch(e) {}
+
+async function load(){
+  const r = await fetch(SCRIPT_URL + '?action=report&key=' + encodeURIComponent(key));
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || 'Errore');
+  orders = j.orders;
+  $('login').style.display='none'; $('app').style.display='block';
+  $('upd').textContent = 'Aggiornato alle ' + new Date().toLocaleTimeString('it-IT');
+  render();
+}
+
+function render(){
+  const f = $('q').value.trim().toLowerCase();
+  const list = orders.filter(o => !f || (o.nome+' '+o.cognome+' '+o.telefono).toLowerCase().includes(f))
+    .sort((a,b)=>{const x=a[sortK],y=b[sortK];return (typeof x==='number'?x-y:String(x).localeCompare(String(y),'it'))*sortDir;});
+  const sum = k => orders.reduce((t,o)=>t+(o[k]||0),0);
+  const sacks = sum('q1')+sum('q3')+sum('q5')+sum('q10');
+  $('kKg').textContent = sum('kg').toLocaleString('it-IT');
+  $('kEur').textContent = eur(sum('euro'));
+  $('kOrd').textContent = orders.length;
+  $('kSac').textContent = sacks;
+  $('sizes').innerHTML = [1,3,5,10].map(s=>`<div class="card sz"><b>${sum('q'+s)}</b><small>sacchi da ${s} kg<br>= ${sum('q'+s)*s} kg</small></div>`).join('');
+  $('tb').innerHTML = list.map(o=>`<tr><td>${fmtD(o.data)}</td><td>${esc(o.cognome)}</td><td>${esc(o.nome)}</td><td>${esc(o.telefono)}</td>
+    <td class="n">${o.q1||''}</td><td class="n">${o.q3||''}</td><td class="n">${o.q5||''}</td><td class="n">${o.q10||''}</td>
+    <td class="n"><b>${o.kg}</b></td><td class="n">${eur(o.euro)}</td><td class="note">${esc(o.note)}</td></tr>`).join('') || '<tr><td colspan="11" style="color:var(--muted)">Nessun ordine.</td></tr>';
+  const ls = k => list.reduce((t,o)=>t+(o[k]||0),0);
+  $('tf').innerHTML = `<tr><td colspan="4">Totale${f?' (filtrato)':''}</td><td class="n">${ls('q1')}</td><td class="n">${ls('q3')}</td><td class="n">${ls('q5')}</td><td class="n">${ls('q10')}</td><td class="n">${ls('kg')}</td><td class="n">${eur(ls('euro'))}</td><td></td></tr>`;
+}
+
+$('lf').onsubmit = async e => {
+  e.preventDefault(); key = $('pw').value; $('le').textContent = 'Verifica…';
+  try { await load(); try{sessionStorage.setItem('ck',key);}catch(x){} }
+  catch(x){ $('le').textContent = x.message; }
+};
+$('refresh').onclick = () => load().catch(x=>alert(x.message));
+$('q').oninput = render;
+document.querySelector('thead').onclick = e => { const k=e.target.dataset.k; if(!k) return; sortDir = sortK===k ? -sortDir : 1; sortK=k; render(); };
+$('csv').onclick = () => {
+  const cols=['data','cognome','nome','telefono','q1','q3','q5','q10','kg','euro','note'];
+  const head=['Data','Cognome','Nome','Telefono','1 kg','3 kg','5 kg','10 kg','Kg','Euro','Note'];
+  const csv=[head].concat(orders.map(o=>cols.map(c=>c==='data'?fmtD(o[c]):c==='euro'?String(o[c]).replace('.',','):o[c])))
+    .map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv'}));
+  a.download='castagnacopo-ordini.csv'; a.click();
+};
+if (key) load().catch(()=>{ $('login').style.display='block'; });
+</script>
+</body>
+</html>
