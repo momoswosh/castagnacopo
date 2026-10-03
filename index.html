@@ -403,9 +403,9 @@ function render(){
 function err(t){ const m=$('msg'); m.textContent=t; m.className='msg err'; }
 
 // ----- referente: link personale (?r=codice) oppure menu -----
-let REF = '';                     // codice referente scelto
+let REF = '', RID = '';                     // codice referente scelto
 const urlRef = (new URLSearchParams(location.search).get('r') || '').toLowerCase();
-function showFree(on){ $('contatto').hidden = !on; if(on) $('contatto').focus && 0; }
+function showFree(on){ $('contatto').hidden = !on; }
 $('refSel').onchange = () => { const v=$('refSel').value; REF = (v && v!=='__altro') ? v : ''; showFree(v==='__altro'); };
 
 async function loadInfo(){
@@ -440,9 +440,13 @@ $('f').addEventListener('submit', async e => {
   if(!kg()) return err('Scegli almeno un sacco.');
   const btn=$('go'); btn.disabled=true; btn.textContent='Invio in corso…';
   try{
-    const r = await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({nome,cognome,telefono:$('telefono').value.trim(),note:$('note').value.trim(),contatto:$('contatto').value.trim(),ref:REF,q1:q[1],q3:q[3],q5:q[5],q10:q[10]})});
-    const j = await r.json();
+    RID = RID || (Date.now().toString(36) + Math.random().toString(36).slice(2));
+    const body = JSON.stringify({rid:RID,nome,cognome,telefono:$('telefono').value.trim(),note:$('note').value.trim(),contatto:$('contatto').value.trim(),ref:REF,q1:q[1],q3:q[3],q5:q[5],q10:q[10]});
+    const send = () => fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body}).then(r=>r.json());
+    let j;
+    try { j = await send(); }
+    catch(e1){ await new Promise(r=>setTimeout(r,1500)); j = await send(); }   // un secondo tentativo: il server non duplica l'ordine
+    RID = '';
     if(!j.ok){ btn.disabled=false; btn.textContent='Prenota le castagne'; if(j.closed){ loadInfo(); } return err(j.error||'Errore'); }
     $('dn').textContent=nome; $('dk').textContent=j.kg+' kg'; $('de').textContent=eur(j.euro!=null?j.euro:euro());
     $('f').style.display='none'; document.querySelector('.welcome').style.display='none';
