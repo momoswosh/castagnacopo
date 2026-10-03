@@ -307,6 +307,8 @@ footer{text-align:center;margin-top:28px}
 
     <div class="total"><span>Totale <small id="totkg">0 kg</small></span><span id="tot">0 €</span></div>
 
+    <div class="field"><label for="contatto">Chi è il tuo contatto? <span class="opt">(chi ti ha mandato il link)</span></label><input id="contatto" name="contatto" maxlength="60" autocomplete="off"></div>
+
     <div class="field"><label for="note">Note <span class="opt">(facoltative)</span></label><textarea id="note" name="note" rows="2" maxlength="500" placeholder="Vuoi dirmi qualcosa?"></textarea></div>
 
     <button class="btn" id="go" type="submit">Prenota le castagne</button>
@@ -391,7 +393,7 @@ $('f').addEventListener('submit', async e => {
   const btn=$('go'); btn.disabled=true; btn.textContent='Invio in corso…';
   try{
     const r = await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({nome,cognome,telefono:$('telefono').value.trim(),note:$('note').value.trim(),q1:q[1],q3:q[3],q5:q[5],q10:q[10]})});
+      body:JSON.stringify({nome,cognome,telefono:$('telefono').value.trim(),note:$('note').value.trim(),contatto:$('contatto').value.trim(),q1:q[1],q3:q[3],q5:q[5],q10:q[10]})});
     const j = await r.json();
     if(!j.ok) throw new Error(j.error||'Errore');
     $('dn').textContent=nome; $('dk').textContent=j.kg+' kg'; $('de').textContent=eur(j.euro!=null?j.euro:euro());

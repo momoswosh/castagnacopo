@@ -5,42 +5,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Castagnacopo – Report ordini</title>
-<link rel="icon" href="logo.svg" type="image/svg+xml"><text y='.9em' font-size='90'>🌰</text></svg>">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f7f1e8;--card:#fffdf9;--ink:#2b1d14;--muted:#7a6656;--line:#e6d9c8;--brand:#7b3f1d;--accent:#c98a3c;--err:#a8322a}
-@media (prefers-color-scheme:dark){:root{--bg:#1b140f;--card:#251b14;--ink:#f3e9dd;--muted:#b9a593;--line:#3a2c21;--brand:#d98b52;--accent:#e0a85a;--err:#f08a80}}
+:root{--bg:#f7f1e8;--card:#fffdf9;--ink:#2b1d14;--muted:#7a6656;--line:#e6d9c8;--brand:#7b3f1d;--accent:#c98a3c;--err:#a8322a;--sel:#f3e2c8}
+@media (prefers-color-scheme:dark){:root{--bg:#1b140f;--card:#251b14;--ink:#f3e9dd;--muted:#b9a593;--line:#3a2c21;--brand:#d98b52;--accent:#e0a85a;--err:#f08a80;--sel:#3a2a1c}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,sans-serif}
-.wrap{max-width:960px;margin:0 auto;padding:24px 16px 48px}
-h1{font-family:Fraunces,Georgia,serif;font-weight:800;color:var(--brand);margin:0;font-size:clamp(1.6rem,6vw,2.2rem)}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 16px 48px}
+h1{font-family:Fraunces,Georgia,serif;font-weight:800;color:var(--brand);margin:0;font-size:clamp(1.5rem,6vw,2.1rem)}
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
 .login{max-width:360px;margin:60px auto;text-align:center}
-input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;margin:10px 0}
-.btn{padding:10px 16px;border:0;border-radius:10px;background:var(--brand);color:#fff;font:600 .95rem Inter,sans-serif;cursor:pointer}
+input,select{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+.login input{width:100%;margin:10px 0}
+.btn{padding:9px 14px;border:0;border-radius:10px;background:var(--brand);color:#fff;font:600 .9rem Inter,sans-serif;cursor:pointer}
 .btn.ghost{background:transparent;color:var(--brand);border:1px solid var(--line)}
+.btn.danger{background:var(--err);color:#fff}
+.btn.danger.ghost{background:transparent;color:var(--err);border-color:var(--err)}
+.btn:disabled{opacity:.45;cursor:default}
 .err{color:var(--err);min-height:1.5em}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px}
 .kpi small{color:var(--muted);display:block;font-size:.8rem}
-.kpi b{font-family:Fraunces,Georgia,serif;font-size:1.9rem;line-height:1.1}
+.kpi b{font-family:Fraunces,Georgia,serif;font-size:1.8rem;line-height:1.1}
 .kpi.main{background:var(--brand);color:#fff;border-color:transparent}
 .kpi.main small{color:#f3dcc7}
 h2{font-family:Fraunces,Georgia,serif;font-size:1.1rem;margin:0 0 10px}
-.sizes{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.sizes{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 @media (max-width:560px){.sizes{grid-template-columns:repeat(2,1fr)}}
 .sz{text-align:center}
 .sz b{font-family:Fraunces,Georgia,serif;font-size:1.6rem;display:block}
 .sz small{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
 .tw{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.9rem}
 th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
-th{font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);cursor:pointer;user-select:none}
+th{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);cursor:pointer;user-select:none}
+th.nosort{cursor:default}
 td.n,th.n{text-align:right}
 td.note{white-space:normal;min-width:160px;color:var(--muted)}
+tr.sel td{background:var(--sel)}
 tfoot td{font-weight:700;border-top:2px solid var(--ink);border-bottom:0}
-.search{max-width:260px;margin:0}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);cursor:pointer}
 .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:10px}
+.confirm{display:none;margin:0 0 12px;padding:12px 14px;border-radius:12px;border:1px solid var(--err);background:color-mix(in srgb,var(--err) 10%,transparent);align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.confirm.on{display:flex}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
 #app{display:none}
 @media print{.noprint{display:none!important}body{background:#fff;color:#000}.card{border:0;padding:0}}
 </style>
@@ -56,8 +69,10 @@ tfoot td{font-weight:700;border-top:2px solid var(--ink);border-bottom:0}
 
   <div id="app">
     <div class="top">
-      <h1 style="display:flex;align-items:center;gap:10px"><img src="logo.svg" width="44" alt="">Castagnacopo · Report</h1>
-      <div class="noprint" style="display:flex;gap:8px">
+      <h1 style="display:flex;align-items:center;gap:10px"><img src="logo.svg" width="44" alt="">Castagnacopo · <span id="annoTit"></span></h1>
+      <div class="tools noprint">
+        <label for="anno" style="color:var(--muted);font-size:.85rem">Anno</label>
+        <select id="anno"></select>
         <button class="btn ghost" id="refresh">Aggiorna</button>
         <button class="btn ghost" id="csv">Scarica CSV</button>
         <button class="btn ghost" onclick="print()">Stampa</button>
@@ -71,16 +86,28 @@ tfoot td{font-weight:700;border-top:2px solid var(--ink);border-bottom:0}
       <div class="card kpi"><small>Sacchi totali</small><b id="kSac">0</b></div>
     </div>
 
-    <div class="card" style="margin-bottom:16px">
-      <h2>Sacchi da preparare</h2>
-      <div class="sizes" id="sizes"></div>
+    <div class="grid2">
+      <div class="card"><h2>Sacchi da preparare</h2><div class="sizes" id="sizes"></div></div>
+      <div class="card"><h2>Per contatto</h2><div class="tw"><table><thead><tr><th class="nosort">Contatto</th><th class="n nosort">Ordini</th><th class="n nosort">Kg</th></tr></thead><tbody id="perC"></tbody></table></div></div>
     </div>
 
     <div class="card">
-      <div class="bar"><h2 style="margin:0">Dettaglio ordini</h2><input class="search noprint" id="q" placeholder="Cerca nome…"></div>
+      <div class="bar">
+        <h2 style="margin:0">Dettaglio ordini</h2>
+        <div class="tools noprint">
+          <input id="q" placeholder="Cerca nome o contatto…" style="max-width:220px">
+          <button class="btn danger ghost" id="delSel" disabled>Cancella selezionati</button>
+          <button class="btn danger ghost" id="delAll">Cancella tutto l'anno</button>
+        </div>
+      </div>
+      <div class="confirm noprint" id="confirm">
+        <span id="confirmTxt"></span>
+        <span style="display:flex;gap:8px"><button class="btn ghost" id="cNo">Annulla</button><button class="btn danger" id="cYes">Sì, cancella</button></span>
+      </div>
       <div class="tw"><table>
         <thead><tr>
-          <th data-k="data">Data</th><th data-k="cognome">Cognome</th><th data-k="nome">Nome</th><th data-k="telefono">Telefono</th>
+          <th class="nosort noprint"><input type="checkbox" id="all" aria-label="Seleziona tutti"></th>
+          <th data-k="data">Data</th><th data-k="cognome">Cognome</th><th data-k="nome">Nome</th><th data-k="telefono">Telefono</th><th data-k="contatto">Contatto</th>
           <th class="n" data-k="q1">1 kg</th><th class="n" data-k="q3">3 kg</th><th class="n" data-k="q5">5 kg</th><th class="n" data-k="q10">10 kg</th>
           <th class="n" data-k="kg">Kg</th><th class="n" data-k="euro">Euro</th><th data-k="note">Note</th>
         </tr></thead>
@@ -90,44 +117,74 @@ tfoot td{font-weight:700;border-top:2px solid var(--ink);border-bottom:0}
     <p style="color:var(--muted);font-size:.8rem" id="upd"></p>
   </div>
 </div>
+<div class="toast" id="toast"></div>
 
 <script>
-// >>> Stesso URL dell'App web usato in index.html <<<
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0vL3szFbifKWk9gxrhQu1z3SU_Bb4As-VRUbYAAYcqGuq3JDfdtm2xBUimVSI2q-2/exec';
 
 const $ = id => document.getElementById(id);
-const eur = n => (n||0).toLocaleString('it-IT',{style:'currency',currency:'EUR'});
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const fmtD = s => { const d=new Date(s); return isNaN(d)?s:d.toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); };
-let orders = [], sortK = 'data', sortDir = -1, key = '';
+const eur = n => (n||0).toLocaleString('it-IT',{style:'currency',currency:'EUR'});
+const fmtD = s => { const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/); return m ? `${m[3]}/${m[2]} ${m[4]}:${m[5]}` : s; };
+let orders = [], anno = '', sortK = 'data', sortDir = -1, key = '', sel = new Set(), pending = null;
 try { key = sessionStorage.getItem('ck') || ''; } catch(e) {}
 
-async function load(){
-  const r = await fetch(SCRIPT_URL + '?action=report&key=' + encodeURIComponent(key));
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('on'); setTimeout(()=>el.classList.remove('on'),2500); }
+
+async function load(y){
+  const r = await fetch(SCRIPT_URL + '?action=report&key=' + encodeURIComponent(key) + (y ? '&anno=' + y : ''));
   const j = await r.json();
   if (!j.ok) throw new Error(j.error || 'Errore');
-  orders = j.orders;
+  orders = j.orders; anno = j.anno; sel.clear(); hideConfirm();
+  $('anno').innerHTML = j.anni.map(a => `<option ${a===anno?'selected':''}>${a}</option>`).join('');
+  $('annoTit').textContent = anno;
   $('login').style.display='none'; $('app').style.display='block';
   $('upd').textContent = 'Aggiornato alle ' + new Date().toLocaleTimeString('it-IT');
   render();
 }
 
-function render(){
+function filtered(){
   const f = $('q').value.trim().toLowerCase();
-  const list = orders.filter(o => !f || (o.nome+' '+o.cognome+' '+o.telefono).toLowerCase().includes(f))
-    .sort((a,b)=>{const x=a[sortK],y=b[sortK];return (typeof x==='number'?x-y:String(x).localeCompare(String(y),'it'))*sortDir;});
+  return orders.filter(o => !f || [o.nome,o.cognome,o.telefono,o.contatto].join(' ').toLowerCase().includes(f))
+    .sort((a,b)=>{const x=a[sortK],y=b[sortK];return (typeof x==='number'?x-y:String(x??'').localeCompare(String(y??''),'it'))*sortDir;});
+}
+
+function render(){
+  const list = filtered();
   const sum = k => orders.reduce((t,o)=>t+(o[k]||0),0);
-  const sacks = sum('q1')+sum('q3')+sum('q5')+sum('q10');
   $('kKg').textContent = sum('kg').toLocaleString('it-IT');
   $('kEur').textContent = eur(sum('euro'));
   $('kOrd').textContent = orders.length;
-  $('kSac').textContent = sacks;
+  $('kSac').textContent = sum('q1')+sum('q3')+sum('q5')+sum('q10');
   $('sizes').innerHTML = [1,3,5,10].map(s=>`<div class="card sz"><b>${sum('q'+s)}</b><small>sacchi da ${s} kg<br>= ${sum('q'+s)*s} kg</small></div>`).join('');
-  $('tb').innerHTML = list.map(o=>`<tr><td>${fmtD(o.data)}</td><td>${esc(o.cognome)}</td><td>${esc(o.nome)}</td><td>${esc(o.telefono)}</td>
+  const pc = {};
+  orders.forEach(o => { const c = (o.contatto||'').trim() || '—'; pc[c] = pc[c] || {n:0,kg:0}; pc[c].n++; pc[c].kg += o.kg; });
+  $('perC').innerHTML = Object.entries(pc).sort((a,b)=>b[1].kg-a[1].kg).map(([c,v])=>`<tr><td>${esc(c)}</td><td class="n">${v.n}</td><td class="n">${v.kg}</td></tr>`).join('') || '<tr><td colspan="3" style="color:var(--muted)">Nessun ordine.</td></tr>';
+  $('tb').innerHTML = list.map(o=>`<tr class="${sel.has(o.id)?'sel':''}"><td class="noprint"><input type="checkbox" data-id="${esc(o.id)}" ${sel.has(o.id)?'checked':''} aria-label="Seleziona ${esc(o.nome)} ${esc(o.cognome)}"></td>
+    <td>${esc(fmtD(o.data))}</td><td>${esc(o.cognome)}</td><td>${esc(o.nome)}</td><td>${esc(o.telefono)}</td><td>${esc(o.contatto)}</td>
     <td class="n">${o.q1||''}</td><td class="n">${o.q3||''}</td><td class="n">${o.q5||''}</td><td class="n">${o.q10||''}</td>
-    <td class="n"><b>${o.kg}</b></td><td class="n">${eur(o.euro)}</td><td class="note">${esc(o.note)}</td></tr>`).join('') || '<tr><td colspan="11" style="color:var(--muted)">Nessun ordine.</td></tr>';
+    <td class="n"><b>${o.kg}</b></td><td class="n">${eur(o.euro)}</td><td class="note">${esc(o.note)}</td></tr>`).join('') || '<tr><td colspan="13" style="color:var(--muted)">Nessun ordine per il ' + anno + '.</td></tr>';
   const ls = k => list.reduce((t,o)=>t+(o[k]||0),0);
-  $('tf').innerHTML = `<tr><td colspan="4">Totale${f?' (filtrato)':''}</td><td class="n">${ls('q1')}</td><td class="n">${ls('q3')}</td><td class="n">${ls('q5')}</td><td class="n">${ls('q10')}</td><td class="n">${ls('kg')}</td><td class="n">${eur(ls('euro'))}</td><td></td></tr>`;
+  $('tf').innerHTML = `<tr><td class="noprint"></td><td colspan="5">Totale${$('q').value.trim()?' (filtrato)':''}</td><td class="n">${ls('q1')}</td><td class="n">${ls('q3')}</td><td class="n">${ls('q5')}</td><td class="n">${ls('q10')}</td><td class="n">${ls('kg')}</td><td class="n">${eur(ls('euro'))}</td><td></td></tr>`;
+  $('all').checked = list.length>0 && list.every(o=>sel.has(o.id));
+  $('delSel').disabled = sel.size===0;
+  $('delSel').textContent = sel.size ? `Cancella selezionati (${sel.size})` : 'Cancella selezionati';
+  $('delAll').disabled = orders.length===0;
+}
+
+function askConfirm(txt, action){ pending = action; $('confirmTxt').textContent = txt; $('confirm').classList.add('on'); }
+function hideConfirm(){ pending = null; $('confirm').classList.remove('on'); }
+
+async function doDelete(body){
+  $('cYes').disabled = true;
+  try{
+    const r = await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action:'delete',key,anno},body))});
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error||'Errore');
+    toast(j.deleted === 1 ? '1 ordine cancellato' : j.deleted + ' ordini cancellati');
+    await load(anno);
+  }catch(x){ toast('Cancellazione non riuscita: ' + x.message); }
+  finally{ $('cYes').disabled = false; }
 }
 
 $('lf').onsubmit = async e => {
@@ -135,16 +192,23 @@ $('lf').onsubmit = async e => {
   try { await load(); try{sessionStorage.setItem('ck',key);}catch(x){} }
   catch(x){ $('le').textContent = x.message; }
 };
-$('refresh').onclick = () => load().catch(x=>alert(x.message));
+$('refresh').onclick = () => load(anno).catch(x=>toast(x.message));
+$('anno').onchange = e => load(e.target.value).catch(x=>toast(x.message));
 $('q').oninput = render;
 document.querySelector('thead').onclick = e => { const k=e.target.dataset.k; if(!k) return; sortDir = sortK===k ? -sortDir : 1; sortK=k; render(); };
+$('tb').onchange = e => { const id=e.target.dataset.id; if(!id) return; e.target.checked ? sel.add(id) : sel.delete(id); render(); };
+$('all').onchange = e => { filtered().forEach(o => e.target.checked ? sel.add(o.id) : sel.delete(o.id)); render(); };
+$('delSel').onclick = () => askConfirm(`Cancellare ${sel.size === 1 ? "l'ordine selezionato" : 'i ' + sel.size + ' ordini selezionati'}? Non si può annullare.`, () => doDelete({ids:[...sel]}));
+$('delAll').onclick = () => askConfirm(`Cancellare TUTTI i ${orders.length} ordini del ${anno}? Non si può annullare.`, () => doDelete({all:true}));
+$('cNo').onclick = hideConfirm;
+$('cYes').onclick = () => { const a = pending; hideConfirm(); if (a) a(); };
 $('csv').onclick = () => {
-  const cols=['data','cognome','nome','telefono','q1','q3','q5','q10','kg','euro','note'];
-  const head=['Data','Cognome','Nome','Telefono','1 kg','3 kg','5 kg','10 kg','Kg','Euro','Note'];
-  const csv=[head].concat(orders.map(o=>cols.map(c=>c==='data'?fmtD(o[c]):c==='euro'?String(o[c]).replace('.',','):o[c])))
+  const cols=['data','cognome','nome','telefono','contatto','q1','q3','q5','q10','kg','euro','note'];
+  const head=['Data','Cognome','Nome','Telefono','Contatto','1 kg','3 kg','5 kg','10 kg','Kg','Euro','Note'];
+  const csv=[head].concat(orders.map(o=>cols.map(c=>c==='euro'?String(o[c]).replace('.',','):o[c])))
     .map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv'}));
-  a.download='castagnacopo-ordini.csv'; a.click();
+  a.download='castagnacopo-ordini-'+anno+'.csv'; a.click();
 };
 if (key) load().catch(()=>{ $('login').style.display='block'; });
 </script>
