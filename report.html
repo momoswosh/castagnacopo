@@ -8,51 +8,70 @@
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f7f1e8;--card:#fffdf9;--ink:#2b1d14;--muted:#7a6656;--line:#e6d9c8;--brand:#7b3f1d;--accent:#c98a3c;--err:#a8322a;--sel:#f3e2c8}
-@media (prefers-color-scheme:dark){:root{--bg:#1b140f;--card:#251b14;--ink:#f3e9dd;--muted:#b9a593;--line:#3a2c21;--brand:#d98b52;--accent:#e0a85a;--err:#f08a80;--sel:#3a2a1c}}
+:root{--bg:#f7f1e8;--card:#fffdf9;--ink:#2b1d14;--muted:#7a6656;--line:#e6d9c8;--brand:#7b3f1d;--accent:#c98a3c;--err:#a8322a;--ok:#3f7a3a;--wa:#1f8f4e;--sel:#f3e2c8}
+@media (prefers-color-scheme:dark){:root{--bg:#1b140f;--card:#251b14;--ink:#f3e9dd;--muted:#b9a593;--line:#3a2c21;--brand:#d98b52;--accent:#e0a85a;--err:#f08a80;--ok:#8fcf86;--wa:#4cc27f;--sel:#3a2a1c}}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,sans-serif}
-.wrap{max-width:1040px;margin:0 auto;padding:24px 16px 48px}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 16px 48px}
 h1{font-family:Fraunces,Georgia,serif;font-weight:800;color:var(--brand);margin:0;font-size:clamp(1.5rem,6vw,2.1rem)}
+h2{font-family:Fraunces,Georgia,serif;font-size:1.1rem;margin:0 0 10px}
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
 .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;min-width:0}
+.mb{margin-bottom:16px}
 .login{max-width:360px;margin:60px auto;text-align:center}
-input,select{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+input,select{padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;min-width:0}
 .login input{width:100%;margin:10px 0}
-.btn{padding:9px 14px;border:0;border-radius:10px;background:var(--brand);color:#fff;font:600 .9rem Inter,sans-serif;cursor:pointer}
+.btn{padding:8px 13px;border:0;border-radius:10px;background:var(--brand);color:#fff;font:600 .88rem Inter,sans-serif;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .btn.ghost{background:transparent;color:var(--brand);border:1px solid var(--line)}
+.btn.sm{padding:5px 9px;font-size:.8rem;border-radius:8px}
 .btn.danger{background:var(--err);color:#fff}
-.btn.danger.ghost{background:transparent;color:var(--err);border-color:var(--err)}
+.btn.danger.ghost{background:transparent;color:var(--err);border-color:color-mix(in srgb,var(--err) 50%,transparent)}
+.btn.wa{background:var(--wa);color:#fff}
 .btn:disabled{opacity:.45;cursor:default}
 .err{color:var(--err);min-height:1.5em}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
 .kpi small{color:var(--muted);display:block;font-size:.8rem}
-.kpi b{font-family:Fraunces,Georgia,serif;font-size:1.8rem;line-height:1.1}
+.kpi b{font-family:Fraunces,Georgia,serif;font-size:1.7rem;line-height:1.1}
 .kpi.main{background:var(--brand);color:#fff;border-color:transparent}
 .kpi.main small{color:#f3dcc7}
-h2{font-family:Fraunces,Georgia,serif;font-size:1.1rem;margin:0 0 10px}
+.kpi .sub{font-size:.8rem;color:var(--muted)}
 .sizes{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 @media (max-width:560px){.sizes{grid-template-columns:repeat(2,1fr)}}
-.sz{text-align:center}
+.sz{text-align:center;padding:12px}
 .sz b{font-family:Fraunces,Georgia,serif;font-size:1.6rem;display:block}
 .sz small{color:var(--muted)}
-.grid2{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px}
-@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media (max-width:820px){.grid2{grid-template-columns:1fr}}
+.set{display:grid;gap:12px}
+.set .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.set label{font-size:.85rem;font-weight:600}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-size:.8rem;font-weight:600}
+.pill.open{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.pill.closed{background:color-mix(in srgb,var(--err) 15%,transparent);color:var(--err)}
+.hint{color:var(--muted);font-size:.8rem;margin:0}
 .tw{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.9rem}
-th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
-th{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);cursor:pointer;user-select:none}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.88rem}
+th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;vertical-align:middle}
+th{font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);cursor:pointer;user-select:none}
 th.nosort{cursor:default}
 td.n,th.n{text-align:right}
-td.note{white-space:normal;min-width:160px;color:var(--muted)}
+td.c,th.c{text-align:center}
+td.note{white-space:normal;min-width:150px;color:var(--muted)}
 tr.sel td{background:var(--sel)}
+tr.done td{color:var(--muted)}
 tfoot td{font-weight:700;border-top:2px solid var(--ink);border-bottom:0}
-input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);cursor:pointer}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);cursor:pointer;padding:0}
 .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:10px}
 .confirm{display:none;margin:0 0 12px;padding:12px 14px;border-radius:12px;border:1px solid var(--err);background:color-mix(in srgb,var(--err) 10%,transparent);align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .confirm.on{display:flex}
-.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none}
+.refform{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.refform input{flex:1 1 160px}
+.acts{display:flex;gap:6px;flex-wrap:nowrap}
+.muted{color:var(--muted)}
+.tag{font-size:.72rem;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:1px 5px;margin-left:4px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
 .toast.on{opacity:1}
 #app{display:none}
 @media print{.noprint{display:none!important}body{background:#fff;color:#000}.card{border:0;padding:0}}
@@ -63,7 +82,7 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);cursor:poi
   <div class="card login" id="login">
     <img src="logo.svg" width="80" alt="">
     <h1>Report ordini</h1>
-    <form id="lf"><input id="pw" type="password" placeholder="Password" autocomplete="current-password"><button class="btn" style="width:100%">Entra</button></form>
+    <form id="lf"><input id="pw" type="password" placeholder="Password" autocomplete="current-password"><button class="btn" style="width:100%;justify-content:center">Entra</button></form>
     <p class="err" id="le"></p>
   </div>
 
@@ -71,7 +90,7 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);cursor:poi
     <div class="top">
       <h1 style="display:flex;align-items:center;gap:10px"><img src="logo.svg" width="44" alt="">Castagnacopo · <span id="annoTit"></span></h1>
       <div class="tools noprint">
-        <label for="anno" style="color:var(--muted);font-size:.85rem">Anno</label>
+        <label for="anno" class="muted" style="font-size:.85rem">Anno</label>
         <select id="anno"></select>
         <button class="btn ghost" id="refresh">Aggiorna</button>
         <button class="btn ghost" id="csv">Scarica CSV</button>
@@ -80,62 +99,105 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);cursor:poi
     </div>
 
     <div class="kpis">
-      <div class="card kpi main"><small>Kg totali richiesti</small><b id="kKg">0</b></div>
+      <div class="card kpi main"><small>Kg richiesti</small><b id="kKg">0</b></div>
       <div class="card kpi main"><small>Incasso previsto</small><b id="kEur">0</b></div>
-      <div class="card kpi"><small>Ordini</small><b id="kOrd">0</b></div>
-      <div class="card kpi"><small>Sacchi totali</small><b id="kSac">0</b></div>
+      <div class="card kpi"><small>Incassato</small><b id="kPaid">0</b><div class="sub" id="kDue"></div></div>
+      <div class="card kpi"><small>Ordini</small><b id="kOrd">0</b><div class="sub" id="kDel"></div></div>
     </div>
 
     <div class="grid2">
       <div class="card"><h2>Sacchi da preparare</h2><div class="sizes" id="sizes"></div></div>
-      <div class="card"><h2>Per contatto</h2><div class="tw"><table><thead><tr><th class="nosort">Contatto</th><th class="n nosort">Ordini</th><th class="n nosort">Kg</th></tr></thead><tbody id="perC"></tbody></table></div></div>
+      <div class="card noprint">
+        <h2>Prenotazioni</h2>
+        <div class="set">
+          <div class="row"><span class="pill" id="stPill"></span><button class="btn sm" id="stToggle"></button></div>
+          <div class="row">
+            <label for="limit">Kg disponibili</label>
+            <input id="limit" type="number" min="0" step="1" style="width:110px" placeholder="nessun limite">
+            <button class="btn sm ghost" id="limitSave">Salva</button>
+          </div>
+          <p class="hint" id="limitHint"></p>
+          <div class="row">
+            <label for="cmsg">Messaggio quando chiuso</label>
+            <input id="cmsg" style="flex:1 1 220px" placeholder="Per quest'anno le prenotazioni sono chiuse. Grazie a tutti!">
+            <button class="btn sm ghost" id="msgSave">Salva</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb">
+      <div class="bar"><h2 style="margin:0">Referenti</h2><span class="hint">Il link personale compila da solo il contatto. Il riepilogo si apre in WhatsApp già scritto.</span></div>
+      <div class="confirm noprint" id="rconfirm"><span id="rconfirmTxt"></span><span style="display:flex;gap:8px"><button class="btn ghost" id="rNo">Annulla</button><button class="btn danger" id="rYes">Sì, elimina</button></span></div>
+      <div class="tw"><table>
+        <thead><tr><th class="nosort">Referente</th><th class="nosort">WhatsApp</th><th class="n nosort">Ordini</th><th class="n nosort">Kg</th><th class="n nosort">Euro</th><th class="n nosort">Da incassare</th><th class="nosort noprint">Azioni</th></tr></thead>
+        <tbody id="refTb"></tbody>
+      </table></div>
+      <form class="refform noprint" id="rf">
+        <input id="rfNome" placeholder="Nome del referente (es. Mario)" maxlength="60" aria-label="Nome del referente">
+        <input id="rfWa" type="tel" placeholder="WhatsApp (es. 333 1234567)" maxlength="20" aria-label="Numero WhatsApp">
+        <button class="btn" id="rfGo">Aggiungi referente</button>
+        <button class="btn ghost" type="button" id="rfCancel" hidden>Annulla</button>
+      </form>
     </div>
 
     <div class="card">
       <div class="bar">
         <h2 style="margin:0">Dettaglio ordini</h2>
         <div class="tools noprint">
-          <input id="q" placeholder="Cerca nome o contatto…" style="max-width:220px">
-          <button class="btn danger ghost" id="delSel" disabled>Cancella selezionati</button>
-          <button class="btn danger ghost" id="delAll">Cancella tutto l'anno</button>
+          <select id="fRef" aria-label="Filtra per referente"><option value="">Tutti i referenti</option></select>
+          <select id="fSt" aria-label="Filtra per stato"><option value="">Tutti</option><option value="np">Da pagare</option><option value="nc">Da consegnare</option></select>
+          <input id="q" placeholder="Cerca nome…" style="width:150px">
         </div>
       </div>
-      <div class="confirm noprint" id="confirm">
-        <span id="confirmTxt"></span>
-        <span style="display:flex;gap:8px"><button class="btn ghost" id="cNo">Annulla</button><button class="btn danger" id="cYes">Sì, cancella</button></span>
+      <div class="bar noprint">
+        <span class="muted" id="selInfo">Seleziona uno o più ordini per le azioni</span>
+        <div class="tools">
+          <button class="btn sm ghost" id="mkPaid" disabled>Segna pagati</button>
+          <button class="btn sm ghost" id="mkDel" disabled>Segna consegnati</button>
+          <button class="btn sm danger ghost" id="delSel" disabled>Cancella selezionati</button>
+          <button class="btn sm danger ghost" id="delAll">Cancella tutto l'anno</button>
+        </div>
       </div>
+      <div class="confirm noprint" id="confirm"><span id="confirmTxt"></span><span style="display:flex;gap:8px"><button class="btn ghost" id="cNo">Annulla</button><button class="btn danger" id="cYes">Sì, cancella</button></span></div>
       <div class="tw"><table>
         <thead><tr>
           <th class="nosort noprint"><input type="checkbox" id="all" aria-label="Seleziona tutti"></th>
           <th data-k="data">Data</th><th data-k="cognome">Cognome</th><th data-k="nome">Nome</th><th data-k="telefono">Telefono</th><th data-k="contatto">Contatto</th>
           <th class="n" data-k="q1">1 kg</th><th class="n" data-k="q3">3 kg</th><th class="n" data-k="q5">5 kg</th><th class="n" data-k="q10">10 kg</th>
-          <th class="n" data-k="kg">Kg</th><th class="n" data-k="euro">Euro</th><th data-k="note">Note</th>
+          <th class="n" data-k="kg">Kg</th><th class="n" data-k="euro">Euro</th>
+          <th class="c" data-k="pagato">Pagato</th><th class="c" data-k="consegnato">Consegn.</th><th data-k="note">Note</th>
         </tr></thead>
         <tbody id="tb"></tbody><tfoot id="tf"></tfoot>
       </table></div>
     </div>
-    <p style="color:var(--muted);font-size:.8rem" id="upd"></p>
+    <p class="muted" style="font-size:.8rem" id="upd"></p>
   </div>
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0vL3szFbifKWk9gxrhQu1z3SU_Bb4As-VRUbYAAYcqGuq3JDfdtm2xBUimVSI2q-2/exec';
+const SITE = location.origin.includes('boneggio.it') ? location.origin : 'https://castagnacopo.boneggio.it';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const eur = n => (n||0).toLocaleString('it-IT',{style:'currency',currency:'EUR'});
 const fmtD = s => { const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/); return m ? `${m[3]}/${m[2]} ${m[4]}:${m[5]}` : s; };
-let orders = [], anno = '', sortK = 'data', sortDir = -1, key = '', sel = new Set(), pending = null;
+const sacchi = o => [1,3,5,10].filter(s=>o['q'+s]).map(s=>`${o['q'+s]}×${s} kg`).join(', ');
+let D = {orders:[],referenti:[],settings:{}}, anno='', sortK='data', sortDir=-1, key='', sel=new Set(), pending=null, rPending=null, editCode='', adoptName='';
 try { key = sessionStorage.getItem('ck') || ''; } catch(e) {}
 
-function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('on'); setTimeout(()=>el.classList.remove('on'),2500); }
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('on'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove('on'),2600); }
+async function post(body){
+  const r = await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({key,anno},body))});
+  const j = await r.json(); if(!j.ok) throw new Error(j.error||'Errore'); return j;
+}
 
 async function load(y){
-  const r = await fetch(SCRIPT_URL + '?action=report&key=' + encodeURIComponent(key) + (y ? '&anno=' + y : ''));
-  const j = await r.json();
+  const j = await fetch(SCRIPT_URL + '?action=report&key=' + encodeURIComponent(key) + (y ? '&anno=' + y : '')).then(r=>r.json());
   if (!j.ok) throw new Error(j.error || 'Errore');
-  orders = j.orders; anno = j.anno; sel.clear(); hideConfirm();
+  D = j; anno = j.anno; sel.clear(); $('confirm').classList.remove('on');
   $('anno').innerHTML = j.anni.map(a => `<option ${a===anno?'selected':''}>${a}</option>`).join('');
   $('annoTit').textContent = anno;
   $('login').style.display='none'; $('app').style.display='block';
@@ -143,50 +205,168 @@ async function load(y){
   render();
 }
 
+/* ----- gruppi per referente ----- */
+function groupKey(o){
+  if (o.ref) return 'r:'+o.ref;
+  const t = String(o.contatto||'').trim().toLowerCase();
+  const r = D.referenti.find(x => x.nome.trim().toLowerCase() === t);   // scritto a mano ma uguale a un referente
+  return r ? 'r:'+r.code : 't:'+t;
+}
+function groups(){
+  const g = new Map();
+  D.referenti.forEach(r => g.set('r:'+r.code, {key:'r:'+r.code, ref:r, nome:r.nome, orders:[]}));
+  D.orders.forEach(o => { const k=groupKey(o); if(!g.has(k)) g.set(k,{key:k, ref:null, nome:String(o.contatto||'').trim()||'—', orders:[]}); g.get(k).orders.push(o); });
+  return [...g.values()];
+}
+function waNumber(n){ let d=String(n||'').replace(/\D/g,''); if(d.startsWith('00')) d=d.slice(2); if(d.length===10 && d.startsWith('3')) d='39'+d; return d; }
+function summary(g){
+  const tot = g.orders.reduce((t,o)=>t+o.euro,0), kg = g.orders.reduce((t,o)=>t+o.kg,0), due = g.orders.filter(o=>!o.pagato).reduce((t,o)=>t+o.euro,0);
+  const nome = (g.nome||'').split(' ')[0];
+  const righe = g.orders.slice().sort((a,b)=>String(a.cognome).localeCompare(String(b.cognome),'it'))
+    .map(o => `• ${o.nome} ${o.cognome}: ${sacchi(o)} = ${o.kg} kg, ${eur(o.euro)} ${o.pagato?'(pagato)':'(da pagare)'}${o.consegnato?' – consegnato':''}`);
+  return `Ciao ${nome}! Ecco il riepilogo delle castagne Castagnacopo ${anno} ordinate tramite te:\n\n${righe.join('\n') || 'Nessun ordine per ora.'}\n\nTotale: ${kg} kg, ${eur(tot)}\nDa incassare: ${eur(due)}\n\nGrazie!`;
+}
+function csvOf(list, name){
+  const cols=['data','cognome','nome','telefono','contatto','q1','q3','q5','q10','kg','euro','pagato','consegnato','note'];
+  const head=['Data','Cognome','Nome','Telefono','Contatto','1 kg','3 kg','5 kg','10 kg','Kg','Euro','Pagato','Consegnato','Note'];
+  const csv=[head].concat(list.map(o=>cols.map(c=>c==='euro'?String(o[c]).replace('.',','):(c==='pagato'||c==='consegnato')?(o[c]?'sì':'no'):o[c])))
+    .map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv'})); a.download=name; a.click();
+}
+
 function filtered(){
-  const f = $('q').value.trim().toLowerCase();
-  return orders.filter(o => !f || [o.nome,o.cognome,o.telefono,o.contatto].join(' ').toLowerCase().includes(f))
-    .sort((a,b)=>{const x=a[sortK],y=b[sortK];return (typeof x==='number'?x-y:String(x??'').localeCompare(String(y??''),'it'))*sortDir;});
+  const f = $('q').value.trim().toLowerCase(), fr = $('fRef').value, st = $('fSt').value;
+  return D.orders.filter(o => (!f || [o.nome,o.cognome,o.telefono,o.contatto].join(' ').toLowerCase().includes(f))
+      && (!fr || groupKey(o)===fr) && (st!=='np' || !o.pagato) && (st!=='nc' || !o.consegnato))
+    .sort((a,b)=>{const x=a[sortK],y=b[sortK];return (typeof x==='number'||typeof x==='boolean'?(+x)-(+y):String(x??'').localeCompare(String(y??''),'it'))*sortDir;});
 }
 
 function render(){
-  const list = filtered();
-  const sum = k => orders.reduce((t,o)=>t+(o[k]||0),0);
+  const O = D.orders, sum = (k,l=O) => l.reduce((t,o)=>t+(+o[k]||0),0);
+  const paid = O.filter(o=>o.pagato).reduce((t,o)=>t+o.euro,0);
   $('kKg').textContent = sum('kg').toLocaleString('it-IT');
   $('kEur').textContent = eur(sum('euro'));
-  $('kOrd').textContent = orders.length;
-  $('kSac').textContent = sum('q1')+sum('q3')+sum('q5')+sum('q10');
+  $('kPaid').textContent = eur(paid); $('kDue').textContent = 'da incassare ' + eur(sum('euro')-paid);
+  $('kOrd').textContent = O.length; $('kDel').textContent = O.filter(o=>o.consegnato).length + ' consegnati';
   $('sizes').innerHTML = [1,3,5,10].map(s=>`<div class="card sz"><b>${sum('q'+s)}</b><small>sacchi da ${s} kg<br>= ${sum('q'+s)*s} kg</small></div>`).join('');
-  const pc = {};
-  orders.forEach(o => { const c = (o.contatto||'').trim() || '—'; pc[c] = pc[c] || {n:0,kg:0}; pc[c].n++; pc[c].kg += o.kg; });
-  $('perC').innerHTML = Object.entries(pc).sort((a,b)=>b[1].kg-a[1].kg).map(([c,v])=>`<tr><td>${esc(c)}</td><td class="n">${v.n}</td><td class="n">${v.kg}</td></tr>`).join('') || '<tr><td colspan="3" style="color:var(--muted)">Nessun ordine.</td></tr>';
-  $('tb').innerHTML = list.map(o=>`<tr class="${sel.has(o.id)?'sel':''}"><td class="noprint"><input type="checkbox" data-id="${esc(o.id)}" ${sel.has(o.id)?'checked':''} aria-label="Seleziona ${esc(o.nome)} ${esc(o.cognome)}"></td>
+
+  // impostazioni
+  const st = D.settings || {};
+  $('stPill').className = 'pill ' + (st.open ? 'open' : 'closed'); $('stPill').textContent = st.open ? 'Aperte' : 'Chiuse';
+  $('stToggle').textContent = st.open ? 'Chiudi le prenotazioni' : 'Riapri le prenotazioni';
+  $('stToggle').className = 'btn sm ' + (st.open ? 'danger ghost' : '');
+  if (document.activeElement !== $('limit')) $('limit').value = st.limit || '';
+  if (document.activeElement !== $('cmsg')) $('cmsg').value = st.msg || '';
+  $('limitHint').textContent = st.limit ? `Ordinati quest'anno ${D.kgYear} kg su ${st.limit}: restano ${Math.max(0, st.limit - D.kgYear)} kg. Al termine la pagina si chiude da sola.` : `Ordinati quest'anno ${D.kgYear} kg. Lascia vuoto per non mettere limiti.`;
+
+  // referenti
+  const G = groups();
+  $('refTb').innerHTML = G.map(g => {
+    const kg = sum('kg', g.orders), tot = sum('euro', g.orders), due = g.orders.filter(o=>!o.pagato).reduce((t,o)=>t+o.euro,0);
+    const wa = g.ref && waNumber(g.ref.wa);
+    const acts = g.ref
+      ? `${wa ? `<a class="btn sm wa" target="_blank" rel="noopener" href="https://wa.me/${wa}?text=${encodeURIComponent(summary(g))}">Riepilogo WhatsApp</a>` : `<button class="btn sm ghost" data-a="copy" data-k="${esc(g.key)}">Copia riepilogo</button>`}
+         <button class="btn sm ghost" data-a="csv" data-k="${esc(g.key)}">CSV</button>
+         <button class="btn sm ghost" data-a="link" data-k="${esc(g.key)}">Copia link</button>
+         <button class="btn sm ghost" data-a="edit" data-k="${esc(g.key)}">Modifica</button>
+         <button class="btn sm danger ghost" data-a="del" data-k="${esc(g.key)}">Elimina</button>`
+      : `<button class="btn sm ghost" data-a="copy" data-k="${esc(g.key)}">Copia riepilogo</button>
+         <button class="btn sm ghost" data-a="csv" data-k="${esc(g.key)}">CSV</button>
+         <button class="btn sm ghost" data-a="adopt" data-k="${esc(g.key)}">Aggiungi come referente</button>`;
+    return `<tr><td><b>${esc(g.nome)}</b>${g.ref?'':'<span class="tag">scritto a mano</span>'}</td><td>${g.ref ? esc(g.ref.wa)||'<span class="muted">—</span>' : '<span class="muted">—</span>'}</td>
+      <td class="n">${g.orders.length}</td><td class="n">${kg}</td><td class="n">${eur(tot)}</td><td class="n">${due?eur(due):'—'}</td><td class="noprint"><div class="acts">${acts}</div></td></tr>`;
+  }).join('') || '<tr><td colspan="7" class="muted">Nessun referente. Aggiungine uno qui sotto.</td></tr>';
+  const cur = $('fRef').value;
+  $('fRef').innerHTML = '<option value="">Tutti i referenti</option>' + G.filter(g=>g.orders.length).map(g=>`<option value="${esc(g.key)}" ${g.key===cur?'selected':''}>${esc(g.nome)}</option>`).join('');
+
+  // ordini
+  const list = filtered();
+  $('tb').innerHTML = list.map(o=>`<tr class="${sel.has(o.id)?'sel':''} ${o.pagato&&o.consegnato?'done':''}"><td class="noprint"><input type="checkbox" data-id="${esc(o.id)}" ${sel.has(o.id)?'checked':''} aria-label="Seleziona ${esc(o.nome)} ${esc(o.cognome)}"></td>
     <td>${esc(fmtD(o.data))}</td><td>${esc(o.cognome)}</td><td>${esc(o.nome)}</td><td>${esc(o.telefono)}</td><td>${esc(o.contatto)}</td>
     <td class="n">${o.q1||''}</td><td class="n">${o.q3||''}</td><td class="n">${o.q5||''}</td><td class="n">${o.q10||''}</td>
-    <td class="n"><b>${o.kg}</b></td><td class="n">${eur(o.euro)}</td><td class="note">${esc(o.note)}</td></tr>`).join('') || '<tr><td colspan="13" style="color:var(--muted)">Nessun ordine per il ' + anno + '.</td></tr>';
-  const ls = k => list.reduce((t,o)=>t+(o[k]||0),0);
-  $('tf').innerHTML = `<tr><td class="noprint"></td><td colspan="5">Totale${$('q').value.trim()?' (filtrato)':''}</td><td class="n">${ls('q1')}</td><td class="n">${ls('q3')}</td><td class="n">${ls('q5')}</td><td class="n">${ls('q10')}</td><td class="n">${ls('kg')}</td><td class="n">${eur(ls('euro'))}</td><td></td></tr>`;
+    <td class="n"><b>${o.kg}</b></td><td class="n">${eur(o.euro)}</td>
+    <td class="c"><input type="checkbox" data-f="pagato" data-id="${esc(o.id)}" ${o.pagato?'checked':''} aria-label="Pagato"></td>
+    <td class="c"><input type="checkbox" data-f="consegnato" data-id="${esc(o.id)}" ${o.consegnato?'checked':''} aria-label="Consegnato"></td>
+    <td class="note">${esc(o.note)}</td></tr>`).join('') || '<tr><td colspan="15" class="muted">Nessun ordine.</td></tr>';
+  const fl = $('q').value.trim() || $('fRef').value || $('fSt').value;
+  $('tf').innerHTML = `<tr><td class="noprint"></td><td colspan="5">Totale${fl?' (filtrato)':''}</td><td class="n">${sum('q1',list)}</td><td class="n">${sum('q3',list)}</td><td class="n">${sum('q5',list)}</td><td class="n">${sum('q10',list)}</td><td class="n">${sum('kg',list)}</td><td class="n">${eur(sum('euro',list))}</td><td class="c">${list.filter(o=>o.pagato).length}</td><td class="c">${list.filter(o=>o.consegnato).length}</td><td></td></tr>`;
   $('all').checked = list.length>0 && list.every(o=>sel.has(o.id));
-  $('delSel').disabled = sel.size===0;
-  $('delSel').textContent = sel.size ? `Cancella selezionati (${sel.size})` : 'Cancella selezionati';
-  $('delAll').disabled = orders.length===0;
+  ['mkPaid','mkDel','delSel'].forEach(id=>$(id).disabled = sel.size===0);
+  $('selInfo').textContent = sel.size ? `${sel.size} selezionat${sel.size===1?'o':'i'}` : 'Seleziona uno o più ordini per le azioni';
+  $('delAll').disabled = O.length===0;
 }
+
+/* ----- azioni ordini ----- */
+async function setFlag(ids, field, value){
+  ids.forEach(id => { const o = D.orders.find(x=>x.id===id); if(o) o[field]=value; }); render();
+  try { await post({action:'flag', ids, field, value}); toast(ids.length===1 ? 'Salvato' : ids.length+' ordini aggiornati'); }
+  catch(x){ toast('Non salvato: '+x.message); load(anno); }
+}
+$('tb').onchange = e => {
+  const t=e.target, id=t.dataset.id; if(!id) return;
+  if (t.dataset.f) return setFlag([id], t.dataset.f, t.checked);
+  t.checked ? sel.add(id) : sel.delete(id); render();
+};
+$('all').onchange = e => { filtered().forEach(o => e.target.checked ? sel.add(o.id) : sel.delete(o.id)); render(); };
+$('mkPaid').onclick = () => setFlag([...sel], 'pagato', true);
+$('mkDel').onclick = () => setFlag([...sel], 'consegnato', true);
 
 function askConfirm(txt, action){ pending = action; $('confirmTxt').textContent = txt; $('confirm').classList.add('on'); }
-function hideConfirm(){ pending = null; $('confirm').classList.remove('on'); }
-
+$('cNo').onclick = () => { pending=null; $('confirm').classList.remove('on'); };
+$('cYes').onclick = async () => { const a=pending; pending=null; $('confirm').classList.remove('on'); if(a) await a(); };
 async function doDelete(body){
-  $('cYes').disabled = true;
-  try{
-    const r = await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action:'delete',key,anno},body))});
-    const j = await r.json();
-    if(!j.ok) throw new Error(j.error||'Errore');
-    toast(j.deleted === 1 ? '1 ordine cancellato' : j.deleted + ' ordini cancellati');
-    await load(anno);
-  }catch(x){ toast('Cancellazione non riuscita: ' + x.message); }
-  finally{ $('cYes').disabled = false; }
+  try{ const j = await post(Object.assign({action:'delete'},body)); toast(j.deleted===1?'1 ordine cancellato':j.deleted+' ordini cancellati'); await load(anno); }
+  catch(x){ toast('Cancellazione non riuscita: '+x.message); }
 }
+$('delSel').onclick = () => askConfirm(`Cancellare ${sel.size===1?"l'ordine selezionato":'i '+sel.size+' ordini selezionati'}? Non si può annullare.`, () => doDelete({ids:[...sel]}));
+$('delAll').onclick = () => askConfirm(`Cancellare TUTTI i ${D.orders.length} ordini del ${anno}? Non si può annullare.`, () => doDelete({all:true}));
 
+/* ----- impostazioni ----- */
+async function saveSettings(body, msg){
+  try{ const j = await post(Object.assign({action:'settings'},body)); D.settings = j.settings; render(); toast(msg); }
+  catch(x){ toast('Non salvato: '+x.message); }
+}
+$('stToggle').onclick = () => saveSettings({open: !D.settings.open}, D.settings.open ? 'Prenotazioni chiuse' : 'Prenotazioni riaperte');
+$('limitSave').onclick = () => saveSettings({limit: $('limit').value}, $('limit').value ? 'Limite salvato' : 'Limite tolto');
+$('msgSave').onclick = () => saveSettings({msg: $('cmsg').value}, 'Messaggio salvato');
+
+/* ----- referenti ----- */
+function findG(k){ return groups().find(g=>g.key===k); }
+async function copy(text, okMsg){
+  try { await navigator.clipboard.writeText(text); toast(okMsg); }
+  catch(e){ window.prompt('Copia il testo:', text); }
+}
+$('refTb').onclick = e => {
+  const b = e.target.closest('button[data-a]'); if(!b) return;
+  const g = findG(b.dataset.k); if(!g) return;
+  const a = b.dataset.a;
+  if (a==='copy') copy(summary(g), 'Riepilogo copiato');
+  if (a==='csv') csvOf(g.orders, `castagnacopo-${anno}-${(g.ref?g.ref.code:g.nome).replace(/[^\w-]+/g,'_')}.csv`);
+  if (a==='link') copy(`${SITE}/?r=${g.ref.code}`, 'Link copiato: ' + `${SITE}/?r=${g.ref.code}`);
+  if (a==='edit'){ adoptName=''; editCode=g.ref.code; $('rfNome').value=g.ref.nome; $('rfWa').value=g.ref.wa; $('rfGo').textContent='Salva modifiche'; $('rfCancel').hidden=false; $('rfNome').focus(); }
+  if (a==='adopt'){ editCode=''; adoptName=g.nome; $('rfNome').value=g.nome; $('rfWa').value=''; $('rfGo').textContent='Aggiungi referente'; $('rfCancel').hidden=false; $('rfWa').focus(); toast('Inserisci il numero WhatsApp e salva'); }
+  if (a==='del'){ rPending = g.ref.code; $('rconfirmTxt').textContent = `Eliminare il referente ${g.ref.nome}? Gli ordini restano, ma il suo link personale smette di funzionare.`; $('rconfirm').classList.add('on'); }
+};
+function resetRf(){ editCode=''; adoptName=''; $('rf').reset(); $('rfGo').textContent='Aggiungi referente'; $('rfCancel').hidden=true; }
+$('rfCancel').onclick = resetRf;
+$('rf').onsubmit = async e => {
+  e.preventDefault();
+  const nome=$('rfNome').value.trim(); if(!nome) return toast('Scrivi il nome del referente');
+  try{
+    const j = await post({action:'refSave', code: editCode, nome, wa: $('rfWa').value.trim(), adopt: editCode ? '' : adoptName});
+    const msg = editCode ? 'Referente aggiornato' : j.linked ? `Referente aggiunto e collegato a ${j.linked} ordin${j.linked===1?'e':'i'}` : 'Referente aggiunto';
+    resetRf(); if (j.linked) await load(anno); else { D.referenti=j.referenti; render(); } toast(msg);
+  }
+  catch(x){ toast('Non salvato: '+x.message); }
+};
+$('rNo').onclick = () => { rPending=null; $('rconfirm').classList.remove('on'); };
+$('rYes').onclick = async () => {
+  const c=rPending; rPending=null; $('rconfirm').classList.remove('on'); if(!c) return;
+  try{ const j = await post({action:'refDelete', code:c}); D.referenti=j.referenti; toast('Referente eliminato'); render(); }
+  catch(x){ toast('Non eliminato: '+x.message); }
+};
+
+/* ----- generale ----- */
 $('lf').onsubmit = async e => {
   e.preventDefault(); key = $('pw').value; $('le').textContent = 'Verifica…';
   try { await load(); try{sessionStorage.setItem('ck',key);}catch(x){} }
@@ -194,22 +374,9 @@ $('lf').onsubmit = async e => {
 };
 $('refresh').onclick = () => load(anno).catch(x=>toast(x.message));
 $('anno').onchange = e => load(e.target.value).catch(x=>toast(x.message));
-$('q').oninput = render;
-document.querySelector('thead').onclick = e => { const k=e.target.dataset.k; if(!k) return; sortDir = sortK===k ? -sortDir : 1; sortK=k; render(); };
-$('tb').onchange = e => { const id=e.target.dataset.id; if(!id) return; e.target.checked ? sel.add(id) : sel.delete(id); render(); };
-$('all').onchange = e => { filtered().forEach(o => e.target.checked ? sel.add(o.id) : sel.delete(o.id)); render(); };
-$('delSel').onclick = () => askConfirm(`Cancellare ${sel.size === 1 ? "l'ordine selezionato" : 'i ' + sel.size + ' ordini selezionati'}? Non si può annullare.`, () => doDelete({ids:[...sel]}));
-$('delAll').onclick = () => askConfirm(`Cancellare TUTTI i ${orders.length} ordini del ${anno}? Non si può annullare.`, () => doDelete({all:true}));
-$('cNo').onclick = hideConfirm;
-$('cYes').onclick = () => { const a = pending; hideConfirm(); if (a) a(); };
-$('csv').onclick = () => {
-  const cols=['data','cognome','nome','telefono','contatto','q1','q3','q5','q10','kg','euro','note'];
-  const head=['Data','Cognome','Nome','Telefono','Contatto','1 kg','3 kg','5 kg','10 kg','Kg','Euro','Note'];
-  const csv=[head].concat(orders.map(o=>cols.map(c=>c==='euro'?String(o[c]).replace('.',','):o[c])))
-    .map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\n');
-  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv'}));
-  a.download='castagnacopo-ordini-'+anno+'.csv'; a.click();
-};
+$('q').oninput = render; $('fRef').onchange = render; $('fSt').onchange = render;
+document.querySelector('#tb').closest('table').querySelector('thead').onclick = e => { const k=e.target.dataset.k; if(!k) return; sortDir = sortK===k ? -sortDir : 1; sortK=k; render(); };
+$('csv').onclick = () => csvOf(D.orders, 'castagnacopo-ordini-'+anno+'.csv');
 if (key) load().catch(()=>{ $('login').style.display='block'; });
 </script>
 </body>

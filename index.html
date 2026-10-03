@@ -27,6 +27,7 @@
          --brand:#d98b52; --brand-2:#e9a46b; --accent:#e0a85a; --leaf:#9cb85a; --err:#f08a80; }
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:hidden}
 
 /* ---------- Copertina ---------- */
@@ -69,9 +70,15 @@ h2 .n{display:inline-grid;place-items:center;width:26px;height:26px;border-radiu
 @media (max-width:420px){.row,.facts{grid-template-columns:1fr}}
 label{display:block;font-size:.85rem;font-weight:600;margin-bottom:4px}
 label .opt{font-weight:400;color:var(--muted)}
-input,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
-input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+input,textarea,select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
 .field{margin-bottom:14px}
+#refSel+#contatto{margin-top:8px}
+.reffixed{padding:11px 12px;border-radius:10px;background:color-mix(in srgb,var(--leaf) 14%,var(--bg));border:1px solid color-mix(in srgb,var(--leaf) 40%,transparent);font-weight:600}
+.reffixed small{display:block;font-weight:400;color:var(--muted);font-size:.8rem}
+.left{margin:-6px 0 16px;color:var(--muted);font-size:.9rem;text-align:right}
+.closed{text-align:center}
+.closed p{color:var(--muted);margin:0}
 
 .sacks{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 16px}
 .sack{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:16px;padding:14px 10px 12px;background:var(--bg);transition:border-color .15s,background .15s}
@@ -293,6 +300,11 @@ footer{text-align:center;margin-top:28px}
     </div>
   </section>
 
+  <div class="card closed" id="closed" hidden>
+    <h2>Prenotazioni chiuse</h2>
+    <p id="closedMsg">Per quest'anno le prenotazioni sono chiuse. Grazie a tutti!</p>
+  </div>
+
   <form class="card" id="f" novalidate>
     <h2><span class="n">1</span> Chi sei</h2>
     <div class="row">
@@ -300,13 +312,19 @@ footer{text-align:center;margin-top:28px}
       <div class="field"><label for="cognome">Cognome</label><input id="cognome" name="cognome" autocomplete="family-name" required maxlength="60"></div>
     </div>
     <div class="field"><label for="telefono">Telefono <span class="opt">(facoltativo)</span></label><input id="telefono" name="telefono" type="tel" autocomplete="tel" maxlength="30"></div>
-    <div class="field"><label for="contatto">Chi è il tuo contatto? <span class="opt">(chi ti ha mandato il link)</span></label><input id="contatto" name="contatto" required maxlength="60" autocomplete="off"></div>
+    <div class="field">
+      <label for="refSel" id="refLabel">Chi è il tuo contatto? <span class="opt">(chi ti ha mandato il link)</span></label>
+      <div class="reffixed" id="refFixed" hidden></div>
+      <select id="refSel" hidden></select>
+      <input id="contatto" name="contatto" maxlength="60" autocomplete="off" placeholder="Scrivi il nome di chi ti ha mandato il link">
+    </div>
 
     <div class="sep"></div>
     <h2><span class="n">2</span> Quanti sacchi?</h2>
     <div class="sacks" id="sacks"></div>
 
     <div class="total"><span>Totale <small id="totkg">0 kg</small></span><span id="tot">0 €</span></div>
+    <p class="left" id="left" hidden></p>
 
     <div class="field"><label for="note">Note <span class="opt">(facoltative)</span></label><textarea id="note" name="note" rows="2" maxlength="500" placeholder="Vuoi dirmi qualcosa?"></textarea></div>
 
@@ -384,18 +402,48 @@ function render(){
 }
 function err(t){ const m=$('msg'); m.textContent=t; m.className='msg err'; }
 
+// ----- referente: link personale (?r=codice) oppure menu -----
+let REF = '';                     // codice referente scelto
+const urlRef = (new URLSearchParams(location.search).get('r') || '').toLowerCase();
+function showFree(on){ $('contatto').hidden = !on; if(on) $('contatto').focus && 0; }
+$('refSel').onchange = () => { const v=$('refSel').value; REF = (v && v!=='__altro') ? v : ''; showFree(v==='__altro'); };
+
+async function loadInfo(){
+  try{
+    const j = await fetch(SCRIPT_URL+'?action=info').then(r=>r.json());
+    if(!j.ok) return;
+    if(!j.open){
+      $('f').hidden = true; $('closed').hidden = false;
+      if(j.msg) $('closedMsg').textContent = j.msg;
+      return;
+    }
+    if(j.left != null){ $('left').hidden=false; $('left').textContent = j.left>0 ? 'Disponibili ancora '+j.left+' kg' : 'Le castagne disponibili sono finite.'; }
+    const refs = j.referenti || [];
+    const mine = refs.find(r => r.code === urlRef);
+    if(mine){
+      REF = mine.code;
+      $('refFixed').hidden = false; $('refFixed').innerHTML = mine.nome.replace(/[&<>]/g,'') + '<small>Ti ha mandato il link</small>';
+      $('refSel').hidden = true; $('contatto').hidden = true; $('refLabel').htmlFor='';
+    } else if(refs.length){
+      $('refSel').innerHTML = '<option value="">Scegli…</option>' + refs.map(r=>`<option value="${r.code}">${r.nome.replace(/[&<>"]/g,'')}</option>`).join('') + '<option value="__altro">Altro (scrivi il nome)</option>';
+      $('refSel').hidden = false; $('contatto').hidden = true;
+    }
+  }catch(e){ /* senza info resta il campo libero */ }
+}
+loadInfo();
+
 $('f').addEventListener('submit', async e => {
   e.preventDefault(); $('msg').className='msg';
   const nome=$('nome').value.trim(), cognome=$('cognome').value.trim();
   if(!nome||!cognome) return err('Inserisci nome e cognome.');
-  if(!$('contatto').value.trim()) return err('Scrivi chi ti ha mandato il link.');
+  if(!REF && !$('contatto').value.trim()) return err($('refSel').hidden ? 'Scrivi chi ti ha mandato il link.' : 'Scegli chi ti ha mandato il link.');
   if(!kg()) return err('Scegli almeno un sacco.');
   const btn=$('go'); btn.disabled=true; btn.textContent='Invio in corso…';
   try{
     const r = await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({nome,cognome,telefono:$('telefono').value.trim(),note:$('note').value.trim(),contatto:$('contatto').value.trim(),q1:q[1],q3:q[3],q5:q[5],q10:q[10]})});
+      body:JSON.stringify({nome,cognome,telefono:$('telefono').value.trim(),note:$('note').value.trim(),contatto:$('contatto').value.trim(),ref:REF,q1:q[1],q3:q[3],q5:q[5],q10:q[10]})});
     const j = await r.json();
-    if(!j.ok) throw new Error(j.error||'Errore');
+    if(!j.ok){ btn.disabled=false; btn.textContent='Prenota le castagne'; if(j.closed){ loadInfo(); } return err(j.error||'Errore'); }
     $('dn').textContent=nome; $('dk').textContent=j.kg+' kg'; $('de').textContent=eur(j.euro!=null?j.euro:euro());
     $('f').style.display='none'; document.querySelector('.welcome').style.display='none';
     $('done').style.display='block'; window.scrollTo({top:0,behavior:'smooth'});
@@ -404,7 +452,7 @@ $('f').addEventListener('submit', async e => {
 });
 
 $('again').onclick = () => {
-  $('f').reset(); SIZES.forEach(s=>q[s]=0); render();
+  const keepRef = REF, sel = $('refSel').value; $('f').reset(); $('refSel').value = sel; REF = keepRef; SIZES.forEach(s=>q[s]=0); render();
   $('done').style.display='none'; $('f').style.display='block'; document.querySelector('.welcome').style.display='block';
 };
 render();
