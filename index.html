@@ -294,15 +294,14 @@ footer{text-align:center;margin-top:28px}
     <h2>🍂 Ciao!</h2>
     <p>Anche quest'anno sono arrivate le castagne di Caprese Michelangelo, raccolte nei nostri castagneti.</p>
     <p>Se ne vuoi un po', prenota qui sotto i sacchi che ti servono: basta il tuo nome, niente registrazioni. Ti avviseremo quando sono pronte.</p>
-    <div class="facts">
-      <div class="fact"><small>Prenotazioni entro</small><b>da definire</b></div>
-      <div class="fact"><small>Ritiro</small><b>da definire</b></div>
+    <div class="facts" id="facts" style="grid-template-columns:1fr" hidden>
+      <div class="fact"><small>Prenotazioni entro</small><b id="deadline"></b></div>
     </div>
   </section>
 
   <div class="card closed" id="closed" hidden>
     <h2>Prenotazioni chiuse</h2>
-    <p id="closedMsg">Per quest'anno le prenotazioni sono chiuse. Grazie a tutti!</p>
+    <p id="closedMsg">Le prenotazioni sono chiuse. Se ci sarà nuova disponibilità vi avviseremo. Grazie!</p>
   </div>
 
   <form class="card" id="f" novalidate>
@@ -415,7 +414,13 @@ async function loadInfo(){
   try{
     const j = await fetch(SCRIPT_URL+'?action=info').then(r=>r.json());
     if(!j.ok) return;
+    if(j.deadline){
+      const d = new Date(j.deadline+'T12:00:00');
+      $('deadline').textContent = d.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'});
+      $('facts').hidden = false;
+    }
     if(!j.open){
+      $('facts').hidden = true;
       $('f').hidden = true; $('closed').hidden = false;
       if(j.msg) $('closedMsg').textContent = j.msg;
       return;

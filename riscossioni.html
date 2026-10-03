@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#7b3f1d">
+<title>Castagnacopo – Le mie riscossioni</title>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f7f1e8;--card:#fffdf9;--ink:#2b1d14;--muted:#7a6656;--line:#e6d9c8;--brand:#7b3f1d;--accent:#c98a3c;--ok:#3f7a3a;--err:#a8322a}
+@media (prefers-color-scheme:dark){:root{--bg:#1b140f;--card:#251b14;--ink:#f3e9dd;--muted:#b9a593;--line:#3a2c21;--brand:#d98b52;--accent:#e0a85a;--ok:#8fcf86;--err:#f08a80}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif}
+.wrap{max-width:620px;margin:0 auto;padding:22px 16px 48px}
+header{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+header img{width:48px;height:48px}
+h1{font-family:Fraunces,Georgia,serif;font-weight:800;color:var(--brand);margin:0;font-size:1.7rem;line-height:1.1}
+.sub{color:var(--muted);margin:2px 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.kpi small{display:block;color:var(--muted);font-size:.78rem}
+.kpi b{font-family:Fraunces,Georgia,serif;font-size:1.5rem;line-height:1.15;font-variant-numeric:tabular-nums}
+.kpi.due{background:var(--brand);border-color:transparent;color:#fff}
+.kpi.due small{color:#f3dcc7}
+.bar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:6px 0 10px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--ink);padding:8px 12px;font:500 .88rem Inter,sans-serif;cursor:pointer}
+.seg button.on{background:var(--brand);color:#fff}
+select{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+.list{display:grid;gap:10px}
+.o{display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center}
+.o.done{opacity:.6}
+.o h3{margin:0;font-size:1.02rem}
+.o .det{color:var(--muted);font-size:.86rem}
+.o .eur{font-family:Fraunces,Georgia,serif;font-weight:800;font-size:1.2rem;text-align:right;font-variant-numeric:tabular-nums}
+.o .note{grid-column:1/-1;font-size:.85rem;color:var(--muted);font-style:italic}
+.flags{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:99px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font:600 .85rem Inter,sans-serif;cursor:pointer}
+.chip .dot{width:16px;height:16px;border-radius:50%;border:2px solid currentColor;display:inline-grid;place-items:center;font-size:.7rem;line-height:1}
+.chip.on{border-color:var(--ok);color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.chip.on .dot{background:var(--ok);border-color:var(--ok);color:#fff}
+.chip:disabled{opacity:.5}
+.empty{text-align:center;color:var(--muted);padding:26px 10px}
+.err{color:var(--err)}
+.tel{color:inherit}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><img src="logo.svg" alt=""><div><h1 id="title">Le mie riscossioni</h1></div></header>
+  <p class="sub" id="sub">Caricamento…</p>
+
+  <div id="app" hidden>
+    <div class="kpis">
+      <div class="card kpi due"><small>Da incassare</small><b id="kDue">0</b></div>
+      <div class="card kpi"><small>Già incassato</small><b id="kPaid">0</b></div>
+      <div class="card kpi"><small>Ordini</small><b id="kOrd">0</b></div>
+      <div class="card kpi"><small>Castagne</small><b id="kKg">0</b></div>
+    </div>
+    <div class="bar">
+      <div class="seg" role="group" aria-label="Filtro">
+        <button class="on" data-f="">Tutti</button><button data-f="np">Da pagare</button><button data-f="nc">Da ritirare</button>
+      </div>
+      <select id="anno" aria-label="Anno" hidden></select>
+    </div>
+    <div class="list" id="list"></div>
+  </div>
+  <p class="err" id="err" hidden></p>
+  <footer>Castagnacopo · le castagne di Caprese Michelangelo</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0vL3szFbifKWk9gxrhQu1z3SU_Bb4As-VRUbYAAYcqGuq3JDfdtm2xBUimVSI2q-2/exec';
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const eur = n => (n||0).toLocaleString('it-IT',{style:'currency',currency:'EUR'});
+const sacchi = o => [1,3,5,10].filter(s=>o['q'+s]).map(s=>`${o['q'+s]}×${s} kg`).join(', ');
+const TK = new URLSearchParams(location.search).get('k') || '';
+let D = {orders:[]}, filter = '';
+
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('on'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove('on'),2200); }
+
+async function load(anno){
+  try{
+    const j = await fetch(SCRIPT_URL+'?action=mine&t='+encodeURIComponent(TK)+(anno?'&anno='+anno:'')).then(r=>r.json());
+    if(!j.ok) throw new Error(j.error||'Errore');
+    D = j;
+    $('title').textContent = 'Ciao ' + j.nome.split(' ')[0] + '!';
+    $('sub').textContent = `Ordini arrivati tramite te nel ${j.anno}. Tocca "Pagato" o "Ritirato" per segnarli.`;
+    if (j.anni && j.anni.length > 1){ $('anno').hidden=false; $('anno').innerHTML = j.anni.map(a=>`<option ${a===j.anno?'selected':''}>${a}</option>`).join(''); }
+    $('app').hidden = false; render();
+  }catch(e){ $('sub').textContent=''; $('err').hidden=false; $('err').textContent = TK ? e.message : 'Questo link non è completo. Chiedi il tuo link personale a chi organizza.'; }
+}
+
+function render(){
+  const O = D.orders, sum = (l,k) => l.reduce((t,o)=>t+(+o[k]||0),0);
+  const paid = O.filter(o=>o.pagato);
+  $('kDue').textContent = eur(sum(O,'euro') - sum(paid,'euro'));
+  $('kPaid').textContent = eur(sum(paid,'euro'));
+  $('kOrd').textContent = O.length;
+  $('kKg').textContent = sum(O,'kg') + ' kg';
+  const list = O.filter(o => filter==='np' ? !o.pagato : filter==='nc' ? !o.consegnato : true)
+    .sort((a,b)=> (a.pagato&&a.consegnato) - (b.pagato&&b.consegnato) || String(a.cognome).localeCompare(String(b.cognome),'it'));
+  $('list').innerHTML = list.map(o => `
+    <div class="card o ${o.pagato&&o.consegnato?'done':''}">
+      <div><h3>${esc(o.nome)} ${esc(o.cognome)}</h3>
+        <div class="det">${esc(sacchi(o))} · ${o.kg} kg${o.telefono?` · <a class="tel" href="tel:${esc(o.telefono)}">${esc(o.telefono)}</a>`:''}</div></div>
+      <div class="eur">${eur(o.euro)}</div>
+      ${o.note?`<div class="note">“${esc(o.note)}”</div>`:''}
+      <div class="flags">
+        <button class="chip ${o.pagato?'on':''}" data-id="${esc(o.id)}" data-f="pagato" aria-pressed="${o.pagato}"><span class="dot">${o.pagato?'✓':''}</span>Pagato</button>
+        <button class="chip ${o.consegnato?'on':''}" data-id="${esc(o.id)}" data-f="consegnato" aria-pressed="${o.consegnato}"><span class="dot">${o.consegnato?'✓':''}</span>Ritirato</button>
+      </div>
+    </div>`).join('') || `<div class="card empty">${O.length ? 'Nessun ordine in questo elenco.' : 'Ancora nessun ordine tramite te.'}</div>`;
+}
+
+$('list').onclick = async e => {
+  const b = e.target.closest('button.chip'); if(!b) return;
+  const o = D.orders.find(x=>x.id===b.dataset.id); if(!o) return;
+  const f = b.dataset.f, v = !o[f];
+  o[f] = v; render();
+  try{
+    const j = await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'mineFlag', t:TK, anno:D.anno, ids:[o.id], field:f, value:v})}).then(r=>r.json());
+    if(!j.ok || !j.updated) throw new Error(j.error||'non salvato');
+    toast(`${o.nome}: ${f==='pagato'?(v?'pagato':'da pagare'):(v?'ritirato':'da ritirare')}`);
+  }catch(x){ o[f] = !v; render(); toast('Non salvato, riprova'); }
+};
+document.querySelector('.seg').onclick = e => {
+  const b = e.target.closest('button'); if(!b) return;
+  filter = b.dataset.f; document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on', x===b)); render();
+};
+$('anno').onchange = e => load(e.target.value);
+load();
+</script>
+</body>
+</html>

@@ -112,14 +112,26 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);cursor:poi
         <div class="set">
           <div class="row"><span class="pill" id="stPill"></span><button class="btn sm" id="stToggle"></button></div>
           <div class="row">
-            <label for="limit">Kg disponibili</label>
+            <label for="deadline">Prenotazioni entro il</label>
+            <input id="deadline" type="date">
+            <button class="btn sm ghost" id="dlSave">Salva</button>
+            <button class="btn sm ghost" id="dlClear">Togli data</button>
+          </div>
+          <p class="hint" id="dlHint"></p>
+          <div class="row">
+            <label for="limit">Kg disponibili (totale)</label>
             <input id="limit" type="number" min="0" step="1" style="width:110px" placeholder="nessun limite">
             <button class="btn sm ghost" id="limitSave">Salva</button>
+          </div>
+          <div class="row">
+            <label for="addKg">Arrivate altre castagne?</label>
+            <input id="addKg" type="number" min="1" step="1" style="width:90px" placeholder="kg">
+            <button class="btn sm" id="addKgGo">+ Aggiungi kg</button>
           </div>
           <p class="hint" id="limitHint"></p>
           <div class="row">
             <label for="cmsg">Messaggio quando chiuso</label>
-            <input id="cmsg" style="flex:1 1 220px" placeholder="Per quest'anno le prenotazioni sono chiuse. Grazie a tutti!">
+            <input id="cmsg" style="flex:1 1 220px" placeholder="Le prenotazioni sono chiuse. Se ci sarà nuova disponibilità vi avviseremo. Grazie!">
             <button class="btn sm ghost" id="msgSave">Salva</button>
           </div>
         </div>
@@ -224,7 +236,7 @@ function summary(g){
   const nome = (g.nome||'').split(' ')[0];
   const righe = g.orders.slice().sort((a,b)=>String(a.cognome).localeCompare(String(b.cognome),'it'))
     .map(o => `• ${o.nome} ${o.cognome}: ${sacchi(o)} = ${o.kg} kg, ${eur(o.euro)} ${o.pagato?'(pagato)':'(da pagare)'}${o.consegnato?' – consegnato':''}`);
-  return `Ciao ${nome}! Ecco il riepilogo delle castagne Castagnacopo ${anno} ordinate tramite te:\n\n${righe.join('\n') || 'Nessun ordine per ora.'}\n\nTotale: ${kg} kg, ${eur(tot)}\nDa incassare: ${eur(due)}\n\nGrazie!`;
+  return `Ciao ${nome}! Ecco il riepilogo delle castagne Castagnacopo ${anno} ordinate tramite te:\n\n${righe.join('\n') || 'Nessun ordine per ora.'}\n\nTotale: ${kg} kg, ${eur(tot)}\nDa incassare: ${eur(due)}${g.ref && g.ref.tk ? `\n\nPuoi segnare chi ha pagato e chi ha ritirato qui:\n${SITE}/riscossioni.html?k=${g.ref.tk}` : ''}\n\nGrazie!`;
 }
 function csvOf(list, name){
   const cols=['data','cognome','nome','telefono','contatto','q1','q3','q5','q10','kg','euro','pagato','consegnato','note'];
@@ -252,7 +264,12 @@ function render(){
 
   // impostazioni
   const st = D.settings || {};
-  $('stPill').className = 'pill ' + (st.open ? 'open' : 'closed'); $('stPill').textContent = st.open ? 'Aperte' : 'Chiuse';
+  $('stPill').className = 'pill ' + (st.active ? 'open' : 'closed');
+  $('stPill').textContent = st.active ? 'Aperte' : (st.open && st.expired ? 'Chiuse: scadenza passata' : 'Chiuse');
+  if (document.activeElement !== $('deadline')) $('deadline').value = st.deadline || '';
+  $('dlHint').textContent = st.deadline
+    ? (st.expired ? 'La data è passata: la pagina mostra il messaggio di chiusura. Per riaprire metti una nuova data.' : 'Il giorno dopo questa data le prenotazioni si chiudono da sole.')
+    : 'Nessuna scadenza: le prenotazioni restano aperte finché non le chiudi.';
   $('stToggle').textContent = st.open ? 'Chiudi le prenotazioni' : 'Riapri le prenotazioni';
   $('stToggle').className = 'btn sm ' + (st.open ? 'danger ghost' : '');
   if (document.activeElement !== $('limit')) $('limit').value = st.limit || '';
@@ -267,7 +284,8 @@ function render(){
     const acts = g.ref
       ? `${wa ? `<a class="btn sm wa" target="_blank" rel="noopener" href="https://wa.me/${wa}?text=${encodeURIComponent(summary(g))}">Riepilogo WhatsApp</a>` : `<button class="btn sm ghost" data-a="copy" data-k="${esc(g.key)}">Copia riepilogo</button>`}
          <button class="btn sm ghost" data-a="csv" data-k="${esc(g.key)}">CSV</button>
-         <button class="btn sm ghost" data-a="link" data-k="${esc(g.key)}">Copia link</button>
+         <button class="btn sm ghost" data-a="link" data-k="${esc(g.key)}">Link ordini</button>
+         <button class="btn sm ghost" data-a="rlink" data-k="${esc(g.key)}">Link riscossioni</button>
          <button class="btn sm ghost" data-a="edit" data-k="${esc(g.key)}">Modifica</button>
          <button class="btn sm danger ghost" data-a="del" data-k="${esc(g.key)}">Elimina</button>`
       : `<button class="btn sm ghost" data-a="copy" data-k="${esc(g.key)}">Copia riepilogo</button>
@@ -327,6 +345,9 @@ async function saveSettings(body, msg){
   catch(x){ toast('Non salvato: '+x.message); }
 }
 $('stToggle').onclick = () => saveSettings({open: !D.settings.open}, D.settings.open ? 'Prenotazioni chiuse' : 'Prenotazioni riaperte');
+$('dlSave').onclick = () => { if(!$('deadline').value) return toast('Scegli una data'); saveSettings({deadline: $('deadline').value}, 'Data salvata'); };
+$('dlClear').onclick = () => saveSettings({deadline: ''}, 'Data tolta');
+$('addKgGo').onclick = () => { const n = parseInt($('addKg').value,10); if(!(n>0)) return toast('Scrivi quanti kg aggiungere'); $('addKg').value=''; saveSettings({addKg: n}, `Aggiunti ${n} kg: ora sono ${(D.settings.limit||0)+n} kg in totale`); };
 $('limitSave').onclick = () => saveSettings({limit: $('limit').value}, $('limit').value ? 'Limite salvato' : 'Limite tolto');
 $('msgSave').onclick = () => saveSettings({msg: $('cmsg').value}, 'Messaggio salvato');
 
@@ -342,6 +363,7 @@ $('refTb').onclick = e => {
   const a = b.dataset.a;
   if (a==='copy') copy(summary(g), 'Riepilogo copiato');
   if (a==='csv') csvOf(g.orders, `castagnacopo-${anno}-${(g.ref?g.ref.code:g.nome).replace(/[^\w-]+/g,'_')}.csv`);
+  if (a==='rlink') copy(`${SITE}/riscossioni.html?k=${g.ref.tk}`, 'Link riscossioni copiato');
   if (a==='link') copy(`${SITE}/?r=${g.ref.code}`, 'Link copiato: ' + `${SITE}/?r=${g.ref.code}`);
   if (a==='edit'){ adoptName=''; editCode=g.ref.code; $('rfNome').value=g.ref.nome; $('rfWa').value=g.ref.wa; $('rfGo').textContent='Salva modifiche'; $('rfCancel').hidden=false; $('rfNome').focus(); }
   if (a==='adopt'){ editCode=''; adoptName=g.nome; $('rfNome').value=g.nome; $('rfWa').value=''; $('rfGo').textContent='Aggiungi referente'; $('rfCancel').hidden=false; $('rfWa').focus(); toast('Inserisci il numero WhatsApp e salva'); }
