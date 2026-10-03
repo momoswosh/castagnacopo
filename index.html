@@ -408,6 +408,9 @@ const urlRef = (new URLSearchParams(location.search).get('r') || '').toLowerCase
 function showFree(on){ $('contatto').hidden = !on; }
 $('refSel').onchange = () => { const v=$('refSel').value; REF = (v && v!=='__altro') ? v : ''; showFree(v==='__altro'); };
 
+// con il link personale il referente vale subito, anche prima che arrivino le informazioni dal server
+if (urlRef) { REF = urlRef; $('contatto').hidden = true; $('refFixed').hidden = false; $('refFixed').innerHTML = 'Un momento…<small>Ti ha mandato il link</small>'; }
+
 async function loadInfo(){
   try{
     const j = await fetch(SCRIPT_URL+'?action=info').then(r=>r.json());
@@ -424,9 +427,12 @@ async function loadInfo(){
       REF = mine.code;
       $('refFixed').hidden = false; $('refFixed').innerHTML = mine.nome.replace(/[&<>]/g,'') + '<small>Ti ha mandato il link</small>';
       $('refSel').hidden = true; $('contatto').hidden = true; $('refLabel').htmlFor='';
-    } else if(refs.length){
+    } else {
+      if (urlRef) { REF = ''; $('refFixed').hidden = true; $('contatto').hidden = false; }   // link non valido: si sceglie a mano
+      if(refs.length){
       $('refSel').innerHTML = '<option value="">Scegli…</option>' + refs.map(r=>`<option value="${r.code}">${r.nome.replace(/[&<>"]/g,'')}</option>`).join('') + '<option value="__altro">Altro (scrivi il nome)</option>';
       $('refSel').hidden = false; $('contatto').hidden = true;
+      }
     }
   }catch(e){ /* senza info resta il campo libero */ }
 }
