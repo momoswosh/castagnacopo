@@ -134,7 +134,7 @@ function render(){
       <div class="flags">
         <button class="chip ${o.pagato?'on':''}" data-id="${esc(o.id)}" data-f="pagato" aria-pressed="${o.pagato}"><span class="dot">${o.pagato?'✓':''}</span>Pagato</button>
         <button class="chip ${o.consegnato?'on':''}" data-id="${esc(o.id)}" data-f="consegnato" aria-pressed="${o.consegnato}"><span class="dot">${o.consegnato?'✓':''}</span>Ritirato</button>
-        <button class="cancel" data-cancel="${esc(o.id)}">Annulla ordine</button>
+        ${o.pagato&&o.consegnato ? '' : `<button class="cancel" data-cancel="${esc(o.id)}">Annulla ordine</button>`}
       </div>
       ${asking===o.id ? `<div class="ask"><span>Annullare l'ordine di ${esc(o.nome)} ${esc(o.cognome)}? Non si può tornare indietro.</span>
         <span style="display:flex;gap:8px;margin-left:auto"><button class="no" data-no="1">No</button><button class="yes" data-yes="${esc(o.id)}">Sì, annulla</button></span></div>` : ''}
@@ -152,7 +152,7 @@ $('list').onclick = async e => {
         body:JSON.stringify({action:'mineDelete', t:TK, anno:D.anno, ids:[id]})}).then(r=>r.json());
       if(!j.ok || !j.deleted) throw new Error(j.error||'non annullato');
       D.orders = D.orders.filter(x=>x.id!==id); asking=''; render(); toast(`Ordine di ${o?o.nome:''} annullato`);
-    }catch(x){ asking=''; render(); toast('Non annullato, riprova'); }
+    }catch(x){ asking=''; render(); toast(/consegnato/.test(x.message) ? x.message : 'Non annullato, riprova'); }
     return;
   }
   const b = e.target.closest('button.chip'); if(!b) return;
