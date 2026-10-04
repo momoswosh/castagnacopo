@@ -75,6 +75,9 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);cursor:poi
 .conti tr.net td{font-weight:700;font-size:1rem;border-top:2px solid var(--ink);border-bottom:0}
 .conti tr.net td.n{color:var(--ok)}
 .conti tr.net td.n.neg{color:var(--err)}
+.conti tr.sub td{font-size:.84rem;color:var(--muted);padding-top:4px;padding-bottom:4px;border-bottom:1px dashed var(--line)}
+.conti tr.sub td:first-child{padding-left:22px}
+.conti tr.sub td small{margin-left:6px}
 .costs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 @media (max-width:480px){.costs{grid-template-columns:repeat(2,1fr)}}
 .costs label{display:grid;gap:4px;font-size:.78rem;font-weight:600;color:var(--muted)}
@@ -367,8 +370,12 @@ function render(){
   };
   const A = tot(false), P = tot(true);
   const row = (lbl, k, cls='') => `<tr class="${cls}"><td>${lbl}</td><td class="n ${A[k]<0?'neg':''}">${eur(A[k])}</td><td class="n ${P[k]<0?'neg':''}">${eur(P[k])}</td></tr>`;
+  const subs = G.filter(g => g.ref && g.orders.length).map(g => {
+    const r = rateOf(g), a = money(g.orders, r), p = money(g.orders.filter(o=>o.pagato), r);
+    return `<tr class="sub"><td>${esc(g.nome)}<small>${a.kg} kg × ${eur(r)}</small></td><td class="n">${eur(a.ref)}</td><td class="n">${eur(p.ref)}</td></tr>`;
+  }).join('');
   $('contiTb').innerHTML = row('Incasso dai clienti','euro') + row('Da dare al produttore','costo') + row('Ricarico totale','ricarico')
-    + row('Quote ai referenti','ref') + row('Tuo guadagno netto','net','net');
+    + row('Quote ai referenti','ref') + subs + row('Tuo guadagno netto','net','net');
   $('contiHint').textContent = 'Guadagno netto = ricarico − quote ai referenti. Gli ordini con il contatto scritto a mano non hanno quota.';
 
   // referenti
