@@ -295,7 +295,8 @@ footer{text-align:center;margin-top:28px}
     <p>Anche quest'anno sono arrivate le castagne di Caprese Michelangelo, raccolte nei nostri castagneti.</p>
     <p>Se ne vuoi un po', prenota qui sotto i sacchi che ti servono: basta il tuo nome, niente registrazioni. Ti avviseremo quando sono pronte.</p>
     <div class="facts" id="facts" style="grid-template-columns:1fr" hidden>
-      <div class="fact"><small>Prenotazioni entro</small><b id="deadline"></b></div>
+      <div class="fact" id="fDeadline" hidden><small>Prenotazioni entro</small><b id="deadline"></b></div>
+      <div class="fact" id="fPickup" hidden><small>Ritiro</small><b id="pickupFact"></b></div>
     </div>
   </section>
 
@@ -355,7 +356,8 @@ footer{text-align:center;margin-top:28px}
 </svg>
 
     <h2 style="justify-content:center">Grazie <span id="dn"></span>!</h2>
-    <p>Abbiamo ricevuto la tua richiesta di <b id="dk"></b> di castagne,<br>per un totale di <b id="de"></b>.<br>Ti faremo sapere per il ritiro.</p>
+    <p>Abbiamo ricevuto la tua richiesta di <b id="dk"></b> di castagne,<br>per un totale di <b id="de"></b>.</p>
+    <p id="pickup" hidden></p>
     <button class="link" id="again">Fai un'altra richiesta</button>
   </div>
 
@@ -405,7 +407,7 @@ function render(){
 function err(t){ const m=$('msg'); m.textContent=t; m.className='msg err'; }
 
 // ----- referente: link personale (?r=codice) oppure menu -----
-let REF = '', RID = '';                     // codice referente scelto
+let REF = '', RID = '', RITIRO = '';                     // codice referente scelto
 const urlRef = (new URLSearchParams(location.search).get('r') || '').toLowerCase();
 function showFree(on){ $('contatto').hidden = !on; }
 $('refSel').onchange = () => { const v=$('refSel').value; REF = (v && v!=='__altro') ? v : ''; showFree(v==='__altro'); };
@@ -421,8 +423,9 @@ async function loadInfo(){
     if(j.deadline){
       const d = new Date(j.deadline+'T12:00:00');
       $('deadline').textContent = d.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'});
-      $('facts').hidden = false;
+      $('fDeadline').hidden = false; $('facts').hidden = false;
     }
+    if(j.ritiro){ RITIRO = j.ritiro; $('pickupFact').textContent = j.ritiro; $('fPickup').hidden = false; $('facts').hidden = false; }
     if(!j.open){
       $('facts').hidden = true;
       $('f').hidden = true; $('closed').hidden = false;
@@ -464,6 +467,7 @@ $('f').addEventListener('submit', async e => {
     RID = '';
     if(!j.ok){ btn.disabled=false; btn.textContent='Prenota le castagne'; if(j.closed){ loadInfo(); } return err(j.error||'Errore'); }
     $('dn').textContent=nome; $('dk').textContent=j.kg+' kg'; $('de').textContent=eur(j.euro!=null?j.euro:euro());
+    const rit = j.ritiro != null ? j.ritiro : RITIRO; $('pickup').textContent = rit; $('pickup').hidden = !rit;
     $('f').style.display='none'; document.querySelector('.welcome').style.display='none';
     $('done').style.display='block'; window.scrollTo({top:0,behavior:'smooth'});
   }catch(x){ err('Non siamo riusciti a inviare la richiesta. Riprova tra poco. ('+x.message+')'); }
