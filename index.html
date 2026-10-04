@@ -370,16 +370,16 @@ const SIZES = [1, 3, 5, 10];
 const q = {1:0, 3:0, 5:0, 10:0};
 const $ = id => document.getElementById(id);
 const H = {1:34, 3:42, 5:50, 10:60};
-// >>> Prezzi per sacco (euro): se li cambi, cambiali anche in Code.gs <<<
-const PRICE = {1:6.5, 3:16.5, 5:24, 10:52};
+// Prezzi per sacco (euro): arrivano dal server (prezzo produttore + ricarico, si cambiano dal report)
+const PRICE = {1:null, 3:null, 5:null, 10:null};
 const eur = n => n.toLocaleString('it-IT',{style:'currency',currency:'EUR'});   // altezza del sacchetto disegnato
 
 $('sacks').innerHTML = SIZES.map(s => `
   <div class="sack" id="s${s}">
     <div class="sk"><svg viewBox="0 0 60 64" style="height:${H[s]}px" aria-hidden="true"><use href="#sack"/></svg></div>
     <b>${s} kg</b>
-    <span class="price">${eur(PRICE[s])}</span>
-    <small class="perkg">${eur(PRICE[s]/s)} al kg</small>
+    <span class="price" id="p${s}">…</span>
+    <small class="perkg" id="pk${s}">&nbsp;</small>
     <div class="step">
       <button type="button" data-s="${s}" data-d="-1" aria-label="Meno sacchi da ${s} kg">−</button>
       <output id="o${s}">0</output>
@@ -393,10 +393,13 @@ $('sacks').addEventListener('click', e => {
 });
 
 function kg(){ return SIZES.reduce((t,s)=>t+q[s]*s,0); }
-function euro(){ return SIZES.reduce((t,s)=>t+q[s]*PRICE[s],0); }
+function euro(){ return SIZES.reduce((t,s)=>t+q[s]*(PRICE[s]||0),0); }
+function showPrices(){
+  SIZES.forEach(s => { if (PRICE[s] == null) return; $('p'+s).textContent = eur(PRICE[s]); $('pk'+s).textContent = eur(PRICE[s]/s) + ' al kg'; });
+}
 function render(){
   SIZES.forEach(s => { $('o'+s).textContent = q[s]; $('s'+s).classList.toggle('on', q[s]>0); });
-  $('tot').textContent = eur(euro());
+  $('tot').textContent = PRICE[1] == null && kg() ? '…' : eur(euro());
   $('totkg').textContent = kg() + ' kg';
 }
 function err(t){ const m=$('msg'); m.textContent=t; m.className='msg err'; }
@@ -414,6 +417,7 @@ async function loadInfo(){
   try{
     const j = await fetch(SCRIPT_URL+'?action=info').then(r=>r.json());
     if(!j.ok) return;
+    if(j.prices){ SIZES.forEach((s,i) => PRICE[s] = +j.prices[i]); showPrices(); render(); }
     if(j.deadline){
       const d = new Date(j.deadline+'T12:00:00');
       $('deadline').textContent = d.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'});
