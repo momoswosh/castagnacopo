@@ -26,6 +26,9 @@ h1{font-family:Fraunces,Georgia,serif;font-weight:800;color:var(--brand);margin:
 .kpi b{font-family:Fraunces,Georgia,serif;font-size:1.5rem;line-height:1.15;font-variant-numeric:tabular-nums}
 .kpi.due{background:var(--brand);border-color:transparent;color:#fff}
 .kpi.due small{color:#f3dcc7}
+.kpi.earn{grid-column:1/-1;border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
+.kpi.earn b{color:var(--ok)}
+.kpi .det{color:var(--muted);font-size:.85rem}
 .bar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:6px 0 10px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .seg button{border:0;background:transparent;color:var(--ink);padding:8px 12px;font:500 .88rem Inter,sans-serif;cursor:pointer}
@@ -63,6 +66,7 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:24px}
       <div class="card kpi"><small>Già incassato</small><b id="kPaid">0</b></div>
       <div class="card kpi"><small>Ordini</small><b id="kOrd">0</b></div>
       <div class="card kpi"><small>Castagne</small><b id="kKg">0</b></div>
+      <div class="card kpi earn" id="earn" hidden><small id="kRate">La tua quota</small><b id="kEarn">0</b><div class="det" id="kEarnPaid"></div></div>
     </div>
     <div class="bar">
       <div class="seg" role="group" aria-label="Filtro">
@@ -107,6 +111,13 @@ function render(){
   $('kPaid').textContent = eur(sum(paid,'euro'));
   $('kOrd').textContent = O.length;
   $('kKg').textContent = sum(O,'kg') + ' kg';
+  const rate = +D.rate || 0;
+  $('earn').hidden = !rate;
+  if (rate) {
+    $('kRate').textContent = `La tua quota (${eur(rate)} al kg)`;
+    $('kEarn').textContent = eur(sum(O,'kg') * rate);
+    $('kEarnPaid').textContent = `di cui sugli ordini già pagati: ${eur(sum(paid,'kg') * rate)}`;
+  }
   const list = O.filter(o => filter==='np' ? !o.pagato : filter==='nc' ? !o.consegnato : true)
     .sort((a,b)=> (a.pagato&&a.consegnato) - (b.pagato&&b.consegnato) || String(a.cognome).localeCompare(String(b.cognome),'it'));
   $('list').innerHTML = list.map(o => `
