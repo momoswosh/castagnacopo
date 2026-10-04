@@ -457,7 +457,8 @@ $('msgSave').onclick = () => saveSettings({msg: $('cmsg').value}, 'Messaggio sal
 $('ritiroSave').onclick = () => saveSettings({ritiro: $('ritiro').value}, $('ritiro').value.trim() ? 'Informazioni per il ritiro salvate' : 'Informazioni per il ritiro tolte');
 const SZ = [1,3,5,10];
 function readPrices(){
-  const c = SZ.map(z=>num($('c'+z).value)), m = num($('markup').value), q = num($('quota').value);
+  const num0 = id => $(id).value.trim()==='' ? 0 : num($(id).value);   // campo vuoto = 0
+  const c = SZ.map(z=>num($('c'+z).value)), m = num0('markup'), q = num0('quota');
   const v = SZ.map(z=>{ const t=$('v'+z).value.trim(); return t==='' ? '' : num(t); });
   const ok = !c.some(x=>!(x>0)) && !isNaN(m) && !isNaN(q) && !v.some(x=>x!=='' && !(x>0));
   const auto = SZ.map((z,i)=>Math.round((c[i]+(m||0)*z)*100)/100);
