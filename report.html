@@ -335,7 +335,7 @@ function summary(g){
   const righe = g.orders.slice().sort((a,b)=>String(a.cognome).localeCompare(String(b.cognome),'it'))
     .map(o => `• ${o.nome} ${o.cognome}: ${sacchi(o)} = ${o.kg} kg, ${eur(o.euro)} ${o.pagato?'(pagato)':'(da pagare)'}${o.consegnato?' – consegnato':isFull(o)?' – pronto per il ritiro':''}`);
   const rate = rateOf(g), guad = rate ? `\nLa tua quota (${eur(rate)} al kg): ${eur(kg*rate)}` : '';
-  return `Ciao ${nome}! Ecco il riepilogo delle castagne Castagnacopo ${anno} ordinate tramite te:\n\n${righe.join('\n') || 'Nessun ordine per ora.'}\n\nTotale: ${kg} kg, ${eur(tot)}\nDa incassare: ${eur(due)}${guad}${g.ref && g.ref.tk ? `\n\nPuoi segnare chi ha pagato e chi ha ritirato qui:\n${SITE}/riscossioni.html?k=${g.ref.tk}` : ''}\n\nGrazie!`;
+  return `Ciao ${nome}! Ecco il riepilogo delle castagne Castagnacopo ${anno} ordinate tramite te:\n\n${righe.join('\n') || 'Nessun ordine per ora.'}\n\nTotale: ${kg} kg, ${eur(tot)}\nDa incassare: ${eur(due)}${guad}${g.ref && g.ref.tk ? `\n\nI tuoi ordini (pagamenti, ritiri e sacchetti pronti) li trovi qui:\n${SITE}/riscossioni.html?k=${g.ref.tk}` : ''}\n\nGrazie!`;
 }
 function csvOf(list, name){
   const cols=['data','cognome','nome','telefono','contatto','q1','q3','q5','q10','kg','euro','costo','ricarico','pagato','consegnato','note'];
@@ -412,7 +412,7 @@ function render(){
       ? `${wa ? `<a class="btn sm wa" target="_blank" rel="noopener" href="https://wa.me/${wa}?text=${encodeURIComponent(summary(g))}">Riepilogo WhatsApp</a>` : `<button class="btn sm ghost" data-a="copy" data-k="${esc(g.key)}">Copia riepilogo</button>`}
          <button class="btn sm ghost" data-a="csv" data-k="${esc(g.key)}">CSV</button>
          <button class="btn sm ghost" data-a="link" data-k="${esc(g.key)}">Link ordini</button>
-         <button class="btn sm ghost" data-a="rlink" data-k="${esc(g.key)}">Link riscossioni</button>
+         <button class="btn sm ghost" data-a="rlink" data-k="${esc(g.key)}">Link I miei ordini</button>
          <button class="btn sm ghost" data-a="edit" data-k="${esc(g.key)}">Modifica</button>
          <button class="btn sm danger ghost" data-a="del" data-k="${esc(g.key)}">Elimina</button>`
       : `<button class="btn sm ghost" data-a="copy" data-k="${esc(g.key)}">Copia riepilogo</button>
@@ -528,7 +528,7 @@ $('refTb').onclick = e => {
   const a = b.dataset.a;
   if (a==='copy') copy(summary(g), 'Riepilogo copiato');
   if (a==='csv') csvOf(g.orders, `castagnacopo-${anno}-${(g.ref?g.ref.code:g.nome).replace(/[^\w-]+/g,'_')}.csv`);
-  if (a==='rlink') copy(`${SITE}/riscossioni.html?k=${g.ref.tk}`, 'Link riscossioni copiato');
+  if (a==='rlink') copy(`${SITE}/riscossioni.html?k=${g.ref.tk}`, 'Link "I miei ordini" copiato');
   if (a==='link') copy(`${SITE}/?r=${g.ref.code}`, 'Link copiato: ' + `${SITE}/?r=${g.ref.code}`);
   if (a==='edit'){ adoptName=''; editCode=g.ref.code; $('rfNome').value=g.ref.nome; $('rfWa').value=g.ref.wa; $('rfQuota').value=fmtN(g.ref.quota); $('rfGo').textContent='Salva modifiche'; $('rfCancel').hidden=false; $('rfNome').focus(); }
   if (a==='adopt'){ editCode=''; adoptName=g.nome; $('rfNome').value=g.nome; $('rfWa').value=''; $('rfGo').textContent='Aggiungi referente'; $('rfCancel').hidden=false; $('rfWa').focus(); toast('Inserisci il numero WhatsApp e salva'); }
