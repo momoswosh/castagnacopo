@@ -47,6 +47,12 @@ h1{font-family:Fraunces,Georgia,serif;font-weight:800;color:var(--brand);margin:
 .sumcard .pt{font-size:.95rem}
 .sumcard .pt td,.sumcard .pt th{padding:8px}
 .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.75rem;color:var(--muted);margin-top:8px}
+.dates{overflow-x:auto;margin:0 -4px;padding:0 4px}
+.dates .pt{min-width:100%;width:auto}
+.dates .pt th{white-space:nowrap}
+.dates .pt td.tot,.dates .pt th.tot{border-right:1px solid var(--line)}
+.dates .pt tr.sum td{border-top:2px solid var(--line)}
+.dates .nd{color:var(--muted);font-weight:500}
 .legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:currentColor}
 .bar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:6px 0 10px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
@@ -97,9 +103,14 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:24px}
       <div id="sumTab"></div>
       <div class="legend"><span style="color:var(--ok)">tutti pronti</span><span style="color:#c9731a">in parte</span><span style="color:var(--err)">da preparare</span></div>
     </div>
+    <div class="card sumcard" id="datecard" hidden>
+      <h2>Ritiri per data</h2>
+      <div class="dates" id="dateTab"></div>
+      <p class="legend" style="display:block">Sacchetti degli ordini non ancora consegnati, per giorno da cui si possono ritirare.</p>
+    </div>
     <div class="bar">
       <div class="seg" role="group" aria-label="Filtro">
-        <button class="on" data-f="">Tutti</button><button data-f="np">Da pagare</button><button data-f="nc">Da ritirare</button><button data-f="pr">Pronti</button>
+        <button class="on" data-f="">Tutti</button><button data-f="np">Da pagare</button><button data-f="nc">Da consegnare</button><button data-f="pr">Pronti</button>
       </div>
       <select id="anno" aria-label="Anno" hidden></select>
     </div>
@@ -133,9 +144,9 @@ const rOf = o => Object.fromEntries(SZ.map(s=>[s,Math.min(+o['r'+s]||0,+o['q'+s]
 function prepLine(o){
   const t = prepTable(qOf(o), rOf(o));
   if (o.consegnato) return t;
-  if (isFull(o)) return t + (o.prontoDal ? `<div class="prep full">✓ <b>Pronto per il ritiro</b> dal ${esc(fmtDay(o.prontoDal))}</div>`
+  if (isFull(o)) return t + (o.prontoDal ? `<div class="prep full">✓ <b>Pronto per il ritiro</b> da ${esc(fmtDay(o.prontoDal))}</div>`
                                         : `<div class="prep full">✓ <b>Pronto</b> · data di ritiro da definire</div>`);
-  if (o.prontoDal) return t + `<div class="prep part">Ritiro previsto dal <b>${esc(fmtDay(o.prontoDal))}</b></div>`;
+  if (o.prontoDal) return t + `<div class="prep part">Ritiro previsto da <b>${esc(fmtDay(o.prontoDal))}</b></div>`;
   return t;
 }
 const TK = new URLSearchParams(location.search).get('k') || '';
@@ -162,7 +173,7 @@ async function load(anno){
     if(!j.ok) throw new Error(j.error||'Errore');
     D = j;
     $('title').textContent = 'Ciao ' + j.nome.split(' ')[0] + '!';
-    $('sub').textContent = `Ordini arrivati tramite te nel ${j.anno}. Tocca "Pagato" o "Ritirato" per segnarli.`;
+    $('sub').textContent = `Ordini arrivati tramite te nel ${j.anno}. Tocca "Pagato" o "Consegnato" per segnarli.`;
     if (j.anni && j.anni.length > 1){ $('anno').hidden=false; $('anno').innerHTML = j.anni.map(a=>`<option ${a===j.anno?'selected':''}>${a}</option>`).join(''); }
     $('app').hidden = false; render();
   }catch(e){ $('sub').textContent=''; $('err').hidden=false; $('err').textContent = TK ? e.message : 'Questo link non è completo. Chiedi il tuo link personale a chi organizza.';
@@ -181,6 +192,21 @@ function render(){
   O.forEach(o=>{ const q=qOf(o), r=rOf(o); SZ.forEach(s=>{ qa[s]+=q[s]; ra[s]+= o.consegnato ? q[s] : r[s]; }); });
   $('sumcard').hidden = !O.length;
   if (O.length) $('sumTab').innerHTML = prepTable(qa, ra);
+  // ritiri per data: sacchetti degli ordini non consegnati, per data di ritiro (in ordine)
+  const open = O.filter(o=>!o.consegnato);
+  const keys = [...new Set(open.map(o=>o.prontoDal||''))].sort((a,b)=> !a ? 1 : !b ? -1 : a.localeCompare(b));
+  const cell = (k,s) => open.filter(o=>(o.prontoDal||'')===k).reduce((t,o)=>t+(+o['q'+s]||0),0);
+  const sizes = SZ.filter(s=>open.some(o=>+o['q'+s]>0));
+  $('datecard').hidden = !open.length || keys.every(k=>!k);
+  if (!$('datecard').hidden) {
+    const shortDay = k => { const m=k.match(/^(\d{4})-(\d{2})-(\d{2})/); return new Date(+m[1],m[2]-1,+m[3]).toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'}); };
+    const head = keys.map(k=> k ? `<th>${esc(shortDay(k))}</th>` : `<th class="nd">Da definire</th>`).join('');
+    const row = (lbl, f) => `<tr${lbl==='Totale'?' class="sum"':''}><td>${lbl}</td><td class="tot">${f(null)}</td>${keys.map(k=>`<td${k?'':' class="nd"'}>${f(k)||'—'}</td>`).join('')}</tr>`;
+    $('dateTab').innerHTML = `<table class="pt"><tr><th>Peso</th><th class="tot">Totale</th>${head}</tr>`
+      + sizes.map(s=>row(s+' kg', k => k===null ? keys.reduce((t,kk)=>t+cell(kk,s),0) : cell(k,s))).join('')
+      + row('Totale', k => k===null ? sizes.reduce((t,s)=>t+keys.reduce((u,kk)=>u+cell(kk,s),0),0) : sizes.reduce((t,s)=>t+cell(k,s),0))
+      + `</table>`;
+  }
   const rate = +D.rate || 0;
   $('earn').hidden = !rate;
   if (rate) {
@@ -199,7 +225,7 @@ function render(){
       ${prepLine(o)}
       <div class="flags">
         <button class="chip ${o.pagato?'on':''}" data-id="${esc(o.id)}" data-f="pagato" aria-pressed="${o.pagato}"><span class="dot">${o.pagato?'✓':''}</span>Pagato</button>
-        <button class="chip ${o.consegnato?'on':''}" data-id="${esc(o.id)}" data-f="consegnato" aria-pressed="${o.consegnato}"><span class="dot">${o.consegnato?'✓':''}</span>Ritirato</button>
+        <button class="chip ${o.consegnato?'on':''}" data-id="${esc(o.id)}" data-f="consegnato" aria-pressed="${o.consegnato}"><span class="dot">${o.consegnato?'✓':''}</span>Consegnato</button>
         ${o.pagato&&o.consegnato ? '' : `<button class="cancel" data-cancel="${esc(o.id)}">Annulla ordine</button>`}
       </div>
       ${asking===o.id ? `<div class="ask"><span>Annullare l'ordine di ${esc(o.nome)} ${esc(o.cognome)}? Non si può tornare indietro.</span>
@@ -229,7 +255,7 @@ $('list').onclick = async e => {
     const j = await apiFetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
       body:JSON.stringify({action:'mineFlag', t:TK, anno:D.anno, ids:[o.id], field:f, value:v})});
     if(!j.ok || !j.updated) throw new Error(j.error||'non salvato');
-    toast(`${o.nome}: ${f==='pagato'?(v?'pagato':'da pagare'):(v?'ritirato':'da ritirare')}`);
+    toast(`${o.nome}: ${f==='pagato'?(v?'pagato':'da pagare'):(v?'consegnato':'da consegnare')}`);
   }catch(x){ o[f] = !v; render(); toast('Non salvato, riprova'); }
 };
 document.querySelector('.seg').onclick = e => {
