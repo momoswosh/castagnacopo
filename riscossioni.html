@@ -50,7 +50,7 @@ h1{font-family:Fraunces,Georgia,serif;font-weight:800;color:var(--brand);margin:
 .dates{overflow-x:auto;margin:0 -4px;padding:0 4px}
 .dates .pt{min-width:100%;width:auto}
 .dates .pt th{white-space:nowrap}
-.dates .pt td.tot,.dates .pt th.tot{border-right:1px solid var(--line)}
+.dates .pt td.tot,.dates .pt th.tot{border-left:1px solid var(--line)}
 .dates .pt tr.sum td{border-top:2px solid var(--line)}
 .dates .nd{color:var(--muted);font-weight:500}
 .legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:currentColor}
@@ -200,11 +200,11 @@ function render(){
   $('datecard').hidden = !open.length || keys.every(k=>!k);
   if (!$('datecard').hidden) {
     const shortDay = k => { const m=k.match(/^(\d{4})-(\d{2})-(\d{2})/); return new Date(+m[1],m[2]-1,+m[3]).toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'}); };
-    const head = keys.map(k=> k ? `<th>${esc(shortDay(k))}</th>` : `<th class="nd">Da definire</th>`).join('');
-    const row = (lbl, f) => `<tr${lbl==='Totale'?' class="sum"':''}><td>${lbl}</td><td class="tot">${f(null)}</td>${keys.map(k=>`<td${k?'':' class="nd"'}>${f(k)||'—'}</td>`).join('')}</tr>`;
-    $('dateTab').innerHTML = `<table class="pt"><tr><th>Peso</th><th class="tot">Totale</th>${head}</tr>`
-      + sizes.map(s=>row(s+' kg', k => k===null ? keys.reduce((t,kk)=>t+cell(kk,s),0) : cell(k,s))).join('')
-      + row('Totale', k => k===null ? sizes.reduce((t,s)=>t+keys.reduce((u,kk)=>u+cell(kk,s),0),0) : sizes.reduce((t,s)=>t+cell(k,s),0))
+    const tot = (k,s) => k===null ? keys.reduce((t,kk)=>t+cell(kk,s),0) : cell(k,s);
+    const row = (k, lbl, cls) => `<tr${cls?` class="${cls}"`:''}><td${k===''?' class="nd"':''}>${lbl}</td>${sizes.map(s=>`<td>${tot(k,s)||'—'}</td>`).join('')}<td class="tot">${sizes.reduce((t,s)=>t+tot(k,s),0)}</td></tr>`;
+    $('dateTab').innerHTML = `<table class="pt"><tr><th>Ritiro da</th>${sizes.map(s=>`<th>${s} kg</th>`).join('')}<th class="tot">Totale</th></tr>`
+      + keys.map(k => row(k, k ? esc(shortDay(k)) : 'Da definire')).join('')
+      + row(null, 'Totale', 'sum')
       + `</table>`;
   }
   const rate = +D.rate || 0;
