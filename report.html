@@ -283,13 +283,26 @@ let D = {orders:[],referenti:[],settings:{}}, anno='', sortK='data', sortDir=-1,
 try { key = sessionStorage.getItem('ck') || ''; } catch(e) {}
 
 function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('on'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove('on'),2600); }
+// Google a volte risponde con una pagina di errore invece dei dati: riprova da solo qualche volta
+async function apiFetch(url, opts, tries = 3){
+  let last;
+  for (let i = 0; i < tries; i++){
+    try{
+      const r = await fetch(url, opts); const t = await r.text();
+      try { return JSON.parse(t); } catch(e){ last = e; }
+    }catch(e){ last = e; }
+    if (i < tries-1) await new Promise(res => setTimeout(res, 1000 * (i+1)));
+  }
+  throw new Error('Il server non risponde in questo momento. Riprova tra qualche secondo.');
+}
 async function post(body){
-  const r = await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({key,anno},body))});
-  const j = await r.json(); if(!j.ok) throw new Error(j.error||'Errore'); return j;
+  // una sola prova: alcune azioni (aggiungi, cancella) non vanno ripetute due volte
+  const j = await apiFetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({key,anno},body))}, 1);
+  if(!j.ok) throw new Error(j.error||'Errore'); return j;
 }
 
 async function load(y){
-  const j = await fetch(SCRIPT_URL + '?action=report&key=' + encodeURIComponent(key) + (y ? '&anno=' + y : '')).then(r=>r.json());
+  const j = await apiFetch(SCRIPT_URL + '?action=report&key=' + encodeURIComponent(key) + (y ? '&anno=' + y : ''));
   if (!j.ok) throw new Error(j.error || 'Errore');
   D = j; anno = j.anno; sel.clear(); $('confirm').classList.remove('on');
   $('anno').innerHTML = j.anni.map(a => `<option ${a===anno?'selected':''}>${a}</option>`).join('');
