@@ -340,7 +340,7 @@ function prBadge(o){
   if (isFull(o)) return `<span class="pr full" title="${o.prepBy?'Preparato da '+esc(o.prepBy):''}">✓ ${o.prontoDal?fmtDay(o.prontoDal):'pronto'}</span>`;
   return r ? `<span class="pr part">${r}/${n}</span>` : `<span class="pr">0/${n}</span>`;
 }
-const fmtDay = d => { const m=String(d||'').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `dal ${m[3]}/${m[2]}` : ''; };
+const fmtDay = d => { const m=String(d||'').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `da ${m[3]}/${m[2]}` : ''; };
 function waNumber(n){ let d=String(n||'').replace(/\D/g,''); if(d.startsWith('00')) d=d.slice(2); if(d.length===10 && d.startsWith('3')) d='39'+d; return d; }
 function summary(g){
   const tot = g.orders.reduce((t,o)=>t+o.euro,0), kg = g.orders.reduce((t,o)=>t+o.kg,0), due = g.orders.filter(o=>!o.pagato).reduce((t,o)=>t+o.euro,0);
