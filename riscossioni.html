@@ -133,7 +133,9 @@ const rOf = o => Object.fromEntries(SZ.map(s=>[s,Math.min(+o['r'+s]||0,+o['q'+s]
 function prepLine(o){
   const t = prepTable(qOf(o), rOf(o));
   if (o.consegnato) return t;
-  if (isFull(o)) return t + `<div class="prep full">✓ <b>Pronto per il ritiro</b>${o.prontoDal?` dal ${esc(fmtDay(o.prontoDal))}`:''}</div>`;
+  if (isFull(o)) return t + (o.prontoDal ? `<div class="prep full">✓ <b>Pronto per il ritiro</b> dal ${esc(fmtDay(o.prontoDal))}</div>`
+                                        : `<div class="prep full">✓ <b>Pronto</b> · data di ritiro da definire</div>`);
+  if (o.prontoDal) return t + `<div class="prep part">Ritiro previsto dal <b>${esc(fmtDay(o.prontoDal))}</b></div>`;
   return t;
 }
 const TK = new URLSearchParams(location.search).get('k') || '';
