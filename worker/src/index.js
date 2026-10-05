@@ -6,7 +6,7 @@
  * POST /api  (corpo JSON in text/plain) – ordine nuovo oppure { action: … }
  *
  * La password del report non è nel codice: nel database c'è solo la sua impronta (settings.report_key_sha256).
- * Email di avviso: se è impostata la variabile MAIL_WEBHOOK, ogni avviso viene inviato lì (vedi notify()).
+ * Avvisi: notifiche push con ntfy (https://ntfy.sh), canale in settings.ntfy_topic (vedi notify()).
  */
 
 const TZ = 'Europe/Rome';
@@ -121,13 +121,16 @@ async function years(env) {
   return ys.sort().reverse();
 }
 
-/* ---------- email di avviso ---------- */
+/* ---------- notifiche (ntfy) ---------- */
 
+// Avvisi sul telefono con l'app ntfy: il canale (topic) è nelle impostazioni, chiave "ntfy_topic".
 function notify(env, ctx, subject, body) {
-  if (!env.MAIL_WEBHOOK) return;
-  // non blocca la risposta: l'avviso parte dopo
-  ctx.waitUntil(fetch(env.MAIL_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ subject, body, secret: env.MAIL_SECRET || '' }) }).catch(() => {}));
+  ctx.waitUntil((async () => {
+    const topic = (await getProps(env)).ntfy_topic;
+    if (!topic) return;
+    await fetch('https://ntfy.sh/', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic, title: subject, message: body, tags: ['chestnut'], click: SITE + '/report.html' }) });
+  })().catch(() => {}));
 }
 const eurTxt = n => n.toFixed(2).replace('.', ',') + ' €';
 
@@ -223,9 +226,9 @@ async function order(env, ctx, d) {
 
   const sacchi = SIZES.map((z, i) => qty[i] ? qty[i] + ' × ' + z + ' kg' : '').filter(Boolean).join(', ');
   notify(env, ctx, 'Castagnacopo: ' + nome + ' ' + cognome + ' – ' + kg + ' kg',
-    'Nuovo ordine Castagnacopo\n\nNome: ' + nome + ' ' + cognome + '\n' + (telefono ? 'Telefono: ' + telefono + '\n' : '') +
+    'Nome: ' + nome + ' ' + cognome + '\n' + (telefono ? 'Telefono: ' + telefono + '\n' : '') +
     'Contatto: ' + contatto + '\nSacchi: ' + sacchi + '\nTotale: ' + kg + ' kg – ' + eurTxt(euro) + '\n' +
-    (note ? 'Note: ' + note + '\n' : '') + '\nReport: ' + SITE + '/report.html');
+    (note ? 'Note: ' + note : ''));
   return res;
 }
 
@@ -272,7 +275,7 @@ async function mineDelete(env, ctx, d) {
   const res = await remove(env, { anno: year, ids: gone.map(o => o.id) });
   notify(env, ctx, 'Castagnacopo: ordine annullato da ' + ref.nome,
     ref.nome + ' ha annullato:\n\n' + gone.map(o => '- ' + o.nome + ' ' + o.cognome + ': ' + o.kg + ' kg, ' + eurTxt(o.euro)).join('\n') +
-    '\n\nReport: ' + SITE + '/report.html');
+    '');
   return res;
 }
 
