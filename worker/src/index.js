@@ -124,13 +124,18 @@ async function years(env) {
 /* ---------- notifiche (ntfy) ---------- */
 
 // Avvisi sul telefono con l'app ntfy: il canale (topic) è nelle impostazioni, chiave "ntfy_topic".
+async function sendNtfy(env, title, message) {
+  const topic = (await getProps(env)).ntfy_topic;
+  if (!topic) return { ok: false, error: 'Canale ntfy non impostato' };
+  const r = await fetch('https://ntfy.sh/', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ topic, title, message, tags: ['chestnut'], click: SITE + '/report.html' }) });
+  const res = { ok: r.ok, status: r.status, text: (await r.text()).slice(0, 300) };
+  if (!r.ok) await setProp(env, 'ntfy_last_error', new Date().toISOString() + ' ' + res.status + ' ' + res.text);
+  return res;
+}
 function notify(env, ctx, subject, body) {
-  ctx.waitUntil((async () => {
-    const topic = (await getProps(env)).ntfy_topic;
-    if (!topic) return;
-    await fetch('https://ntfy.sh/', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topic, title: subject, message: body, tags: ['chestnut'], click: SITE + '/report.html' }) });
-  })().catch(() => {}));
+  // non blocca la risposta: l'avviso parte dopo
+  ctx.waitUntil(sendNtfy(env, subject, body).catch(e => setProp(env, 'ntfy_last_error', new Date().toISOString() + ' ' + e).catch(() => {})));
 }
 const eurTxt = n => n.toFixed(2).replace('.', ',') + ' €';
 
@@ -398,6 +403,7 @@ async function handlePost(env, ctx, request) {
     if (d.action === 'refDelete') return refDelete(env, d);
     if (d.action === 'prepSave') return prepSave(env, d);
     if (d.action === 'prepDelete') return prepDelete(env, d);
+    if (d.action === 'ntfyTest') return sendNtfy(env, 'Castagnacopo: prova', 'Le notifiche funzionano.');
     return { ok: false, error: 'Azione sconosciuta' };
   }
   return order(env, ctx, d);
