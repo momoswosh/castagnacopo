@@ -34,6 +34,20 @@ h1{font-family:Fraunces,Georgia,serif;font-weight:800;color:var(--brand);margin:
 .prep.part{background:color-mix(in srgb,var(--accent) 16%,transparent)}
 .prep.full{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
 .prep.full b{color:var(--ok)}
+.pt{grid-column:1/-1;width:100%;border-collapse:separate;border-spacing:0;font-size:.86rem;font-variant-numeric:tabular-nums;background:var(--bg);border-radius:10px;overflow:hidden}
+.pt th,.pt td{padding:6px 8px;text-align:center}
+.pt th{font-size:.75rem;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line)}
+.pt th:first-child,.pt td:first-child{text-align:left;color:var(--muted);font-weight:500;white-space:nowrap}
+.pt td{font-weight:600}
+.pt tr+tr td{border-top:1px solid var(--line)}
+.pt .c-ok{color:var(--ok)} .pt .c-part{color:#c9731a} .pt .c-todo{color:var(--err)} .pt .c-none{color:var(--muted);font-weight:400}
+@media (prefers-color-scheme:dark){.pt .c-part{color:#f0a24a}}
+.sumcard{margin-bottom:14px}
+.sumcard h2{font-family:Fraunces,Georgia,serif;font-size:1.05rem;margin:0 0 8px}
+.sumcard .pt{font-size:.95rem}
+.sumcard .pt td,.sumcard .pt th{padding:8px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.75rem;color:var(--muted);margin-top:8px}
+.legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:currentColor}
 .bar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:6px 0 10px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .seg button{border:0;background:transparent;color:var(--ink);padding:8px 12px;font:500 .88rem Inter,sans-serif;cursor:pointer}
@@ -78,6 +92,11 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:24px}
       <div class="card kpi"><small>Castagne</small><b id="kKg">0</b></div>
       <div class="card kpi earn" id="earn" hidden><small id="kRate">La tua quota</small><b id="kEarn">0</b><div class="det" id="kEarnPaid"></div></div>
     </div>
+    <div class="card sumcard" id="sumcard">
+      <h2>Sacchetti preparati</h2>
+      <div id="sumTab"></div>
+      <div class="legend"><span style="color:var(--ok)">tutti pronti</span><span style="color:#c9731a">in parte</span><span style="color:var(--err)">da preparare</span></div>
+    </div>
     <div class="bar">
       <div class="seg" role="group" aria-label="Filtro">
         <button class="on" data-f="">Tutti</button><button data-f="np">Da pagare</button><button data-f="nc">Da ritirare</button><button data-f="pr">Pronti</button>
@@ -100,12 +119,22 @@ const sacchi = o => [1,3,5,10].filter(s=>o['q'+s]).map(s=>`${o['q'+s]}×${s} kg`
 const nSacchi = (o,p) => [1,3,5,10].reduce((t,s)=>t+(+o[p+s]||0),0);
 const isFull = o => nSacchi(o,'q')>0 && [1,3,5,10].every(s=>(+o['r'+s]||0)===(+o['q'+s]||0));
 const fmtDay = d => { const m=String(d||'').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? new Date(+m[1],m[2]-1,+m[3]).toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}) : ''; };
+const SZ = [1,3,5,10];
+const cls = (r,q) => !q ? 'c-none' : r>=q ? 'c-ok' : r>0 ? 'c-part' : 'c-todo';
+function prepTable(q, r){   // q, r: {1:n,3:n,5:n,10:n}
+  const sizes = SZ.filter(s=>q[s]>0);
+  const tq = sizes.reduce((t,s)=>t+q[s],0), tr = sizes.reduce((t,s)=>t+Math.min(r[s],q[s]),0);
+  return `<table class="pt"><tr><th></th>${sizes.map(s=>`<th>${s} kg</th>`).join('')}<th>Totale</th></tr>
+    <tr><td>Richiesti</td>${sizes.map(s=>`<td>${q[s]}</td>`).join('')}<td>${tq}</td></tr>
+    <tr><td>Preparati</td>${sizes.map(s=>`<td class="${cls(r[s],q[s])}">${r[s]}</td>`).join('')}<td class="${cls(tr,tq)}">${tr}</td></tr></table>`;
+}
+const qOf = o => Object.fromEntries(SZ.map(s=>[s,+o['q'+s]||0]));
+const rOf = o => Object.fromEntries(SZ.map(s=>[s,Math.min(+o['r'+s]||0,+o['q'+s]||0)]));
 function prepLine(o){
-  if (o.consegnato) return '';
-  const tot = nSacchi(o,'q'), ok = nSacchi(o,'r');
-  if (isFull(o)) return `<div class="prep full">✓ <b>Pronto per il ritiro</b>${o.prontoDal?` dal ${esc(fmtDay(o.prontoDal))}`:''} · ${tot} sacchett${tot===1?'o':'i'}</div>`;
-  if (ok) return `<div class="prep part">Pronti <b>${ok} di ${tot}</b> sacchetti · ${[1,3,5,10].filter(s=>o['r'+s]).map(s=>`${o['r'+s]}×${s} kg`).join(', ')}</div>`;
-  return `<div class="prep">In preparazione · ${tot} sacchett${tot===1?'o':'i'} da preparare</div>`;
+  const t = prepTable(qOf(o), rOf(o));
+  if (o.consegnato) return t;
+  if (isFull(o)) return t + `<div class="prep full">✓ <b>Pronto per il ritiro</b>${o.prontoDal?` dal ${esc(fmtDay(o.prontoDal))}`:''}</div>`;
+  return t;
 }
 const TK = new URLSearchParams(location.search).get('k') || '';
 let D = {orders:[]}, filter = '', asking = '';
@@ -131,6 +160,11 @@ function render(){
   $('kPaid').textContent = eur(sum(paid,'euro'));
   $('kOrd').textContent = O.length;
   $('kKg').textContent = sum(O,'kg') + ' kg';
+  // riepilogo sacchetti (gli ordini già ritirati contano come preparati)
+  const qa = {}, ra = {}; SZ.forEach(s=>{ qa[s]=0; ra[s]=0; });
+  O.forEach(o=>{ const q=qOf(o), r=rOf(o); SZ.forEach(s=>{ qa[s]+=q[s]; ra[s]+= o.consegnato ? q[s] : r[s]; }); });
+  $('sumcard').hidden = !O.length;
+  if (O.length) $('sumTab').innerHTML = prepTable(qa, ra);
   const rate = +D.rate || 0;
   $('earn').hidden = !rate;
   if (rate) {
