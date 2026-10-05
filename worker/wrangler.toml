@@ -1,0 +1,13 @@
+# Castagnacopo – backend su Cloudflare Workers + D1
+name = "castagnacopo"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "castagnacopo"
+database_id = "85a69bb6-eba0-4de8-bd3f-2a31da49f23f"
+
+[observability]
+enabled = true
