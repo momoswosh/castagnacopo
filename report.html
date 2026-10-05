@@ -271,7 +271,7 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);cursor:poi
 <div class="toast" id="toast"></div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0vL3szFbifKWk9gxrhQu1z3SU_Bb4As-VRUbYAAYcqGuq3JDfdtm2xBUimVSI2q-2/exec';
+const SCRIPT_URL = 'https://castagnacopo.maurizio-covarelli.workers.dev/api';
 const SITE = location.origin.includes('boneggio.it') ? location.origin : 'https://castagnacopo.boneggio.it';
 
 const $ = id => document.getElementById(id);
@@ -283,7 +283,7 @@ let D = {orders:[],referenti:[],settings:{}}, anno='', sortK='data', sortDir=-1,
 try { key = sessionStorage.getItem('ck') || ''; } catch(e) {}
 
 function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('on'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove('on'),2600); }
-// Google a volte risponde con una pagina di errore invece dei dati: riprova da solo qualche volta
+// se il server risponde con un errore invece dei dati, riprova da solo qualche volta
 async function apiFetch(url, opts, tries = 3){
   let last;
   for (let i = 0; i < tries; i++){
