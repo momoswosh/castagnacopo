@@ -6,7 +6,7 @@
  * POST /api  (corpo JSON in text/plain) – ordine nuovo oppure { action: … }
  *
  * La password del report non è nel codice: nel database c'è solo la sua impronta (settings.report_key_sha256).
- * Avvisi: notifiche push con ntfy (https://ntfy.sh), canale in settings.ntfy_topic (vedi notify()).
+ * Avvisi: messaggi Telegram tramite un bot; token e chat in settings.tg_token e settings.tg_chat (vedi notify()).
  */
 
 const TZ = 'Europe/Rome';
@@ -121,21 +121,27 @@ async function years(env) {
   return ys.sort().reverse();
 }
 
-/* ---------- notifiche (ntfy) ---------- */
+/* ---------- avvisi su Telegram ---------- */
 
-// Avvisi sul telefono con l'app ntfy: il canale (topic) è nelle impostazioni, chiave "ntfy_topic".
-async function sendNtfy(env, title, message) {
-  const topic = (await getProps(env)).ntfy_topic;
-  if (!topic) return { ok: false, error: 'Canale ntfy non impostato' };
-  const r = await fetch('https://ntfy.sh/', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ topic, title, message, tags: ['chestnut'], click: SITE + '/report.html' }) });
-  const res = { ok: r.ok, status: r.status, text: (await r.text()).slice(0, 300) };
-  if (!r.ok) await setProp(env, 'ntfy_last_error', new Date().toISOString() + ' ' + res.status + ' ' + res.text);
-  return res;
+// Il bot e la chat sono nelle impostazioni: chiavi "tg_token" e "tg_chat" (una o più chat separate da virgola).
+async function sendTelegram(env, title, message) {
+  const p = await getProps(env);
+  if (!p.tg_token || !p.tg_chat) return { ok: false, error: 'Telegram non impostato' };
+  const out = [];
+  for (const chat of String(p.tg_chat).split(',').map(x => x.trim()).filter(Boolean)) {
+    const r = await fetch('https://api.telegram.org/bot' + p.tg_token + '/sendMessage', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chat, text: '🌰 ' + title + '\n\n' + message + '\n\nReport: ' + SITE + '/report.html',
+        disable_web_page_preview: true }) });
+    const res = { ok: r.ok, status: r.status, text: (await r.text()).slice(0, 300) };
+    if (!r.ok) await setProp(env, 'tg_last_error', new Date().toISOString() + ' ' + res.status + ' ' + res.text);
+    out.push(res);
+  }
+  return { ok: out.every(x => x.ok), results: out };
 }
 function notify(env, ctx, subject, body) {
   // non blocca la risposta: l'avviso parte dopo
-  ctx.waitUntil(sendNtfy(env, subject, body).catch(e => setProp(env, 'ntfy_last_error', new Date().toISOString() + ' ' + e).catch(() => {})));
+  ctx.waitUntil(sendTelegram(env, subject, body).catch(e => setProp(env, 'tg_last_error', new Date().toISOString() + ' ' + e).catch(() => {})));
 }
 const eurTxt = n => n.toFixed(2).replace('.', ',') + ' €';
 
@@ -403,7 +409,7 @@ async function handlePost(env, ctx, request) {
     if (d.action === 'refDelete') return refDelete(env, d);
     if (d.action === 'prepSave') return prepSave(env, d);
     if (d.action === 'prepDelete') return prepDelete(env, d);
-    if (d.action === 'ntfyTest') return sendNtfy(env, 'Castagnacopo: prova', 'Le notifiche funzionano.');
+    if (d.action === 'notifyTest') return sendTelegram(env, 'Castagnacopo: prova', 'Gli avvisi funzionano.');
     return { ok: false, error: 'Azione sconosciuta' };
   }
   return order(env, ctx, d);
