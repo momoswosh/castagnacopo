@@ -68,6 +68,9 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);cursor:poi
 .confirm.on{display:flex}
 .refform{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
 .refform input{flex:1 1 160px}
+.pr{font-size:.8rem;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--bg);color:var(--muted)}
+.pr.part{background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--ink)}
+.pr.full{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
 .acts{display:flex;gap:6px;flex-wrap:nowrap}
 .muted{color:var(--muted)}
 .conti td,.conti th{padding:8px 9px}
@@ -219,12 +222,25 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);cursor:poi
       </form>
     </div>
 
+    <div class="card mb">
+      <div class="bar"><h2 style="margin:0">Preparatori</h2><span class="hint">Chi prepara i sacchetti: col suo link segna gli ordini pronti e i referenti lo vedono subito.</span></div>
+      <div class="tw"><table>
+        <thead><tr><th class="nosort">Nome</th><th class="n nosort">Ordini preparati</th><th class="nosort noprint">Azioni</th></tr></thead>
+        <tbody id="prepTb"></tbody>
+      </table></div>
+      <form class="refform noprint" id="pf">
+        <input id="pfNome" placeholder="Nome di chi prepara (es. Luca)" maxlength="60" aria-label="Nome del preparatore">
+        <button class="btn" id="pfGo">Aggiungi preparatore</button>
+        <button class="btn ghost" type="button" id="pfCancel" hidden>Annulla</button>
+      </form>
+    </div>
+
     <div class="card">
       <div class="bar">
         <h2 style="margin:0">Dettaglio ordini</h2>
         <div class="tools noprint">
           <select id="fRef" aria-label="Filtra per referente"><option value="">Tutti i referenti</option></select>
-          <select id="fSt" aria-label="Filtra per stato"><option value="">Tutti</option><option value="np">Da pagare</option><option value="nc">Da consegnare</option></select>
+          <select id="fSt" aria-label="Filtra per stato"><option value="">Tutti</option><option value="np">Da pagare</option><option value="nc">Da consegnare</option><option value="np2">Da preparare</option><option value="pr">Pronti da ritirare</option></select>
           <input id="q" placeholder="Cerca nome…" style="width:150px">
         </div>
       </div>
@@ -244,7 +260,7 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);cursor:poi
           <th data-k="data">Data</th><th data-k="cognome">Cognome</th><th data-k="nome">Nome</th><th data-k="telefono">Telefono</th><th data-k="contatto">Contatto</th>
           <th class="n" data-k="q1">1 kg</th><th class="n" data-k="q3">3 kg</th><th class="n" data-k="q5">5 kg</th><th class="n" data-k="q10">10 kg</th>
           <th class="n" data-k="kg">Kg</th><th class="n" data-k="euro">Euro</th>
-          <th class="c" data-k="pagato">Pagato</th><th class="c" data-k="consegnato">Consegn.</th><th data-k="note">Note</th>
+          <th class="c" data-k="pronti">Pronti</th><th class="c" data-k="pagato">Pagato</th><th class="c" data-k="consegnato">Consegn.</th><th data-k="note">Note</th>
         </tr></thead>
         <tbody id="tb"></tbody><tfoot id="tf"></tfoot>
       </table></div>
@@ -304,12 +320,20 @@ function money(list, rate){
   const kg = s('kg'), ref = Math.round(kg*rate*100)/100;
   return { kg, euro:s('euro'), costo:s('costo'), ricarico:s('ricarico'), ref };
 }
+const nS = (o,p) => [1,3,5,10].reduce((t,z)=>t+(+o[p+z]||0),0);
+const isFull = o => nS(o,'q')>0 && [1,3,5,10].every(z=>(+o['r'+z]||0)===(+o['q'+z]||0));
+function prBadge(o){
+  const n=nS(o,'q'), r=nS(o,'r');
+  if (isFull(o)) return `<span class="pr full" title="${o.prepBy?'Preparato da '+esc(o.prepBy):''}">✓ ${o.prontoDal?fmtDay(o.prontoDal):'pronto'}</span>`;
+  return r ? `<span class="pr part">${r}/${n}</span>` : `<span class="pr">0/${n}</span>`;
+}
+const fmtDay = d => { const m=String(d||'').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `dal ${m[3]}/${m[2]}` : ''; };
 function waNumber(n){ let d=String(n||'').replace(/\D/g,''); if(d.startsWith('00')) d=d.slice(2); if(d.length===10 && d.startsWith('3')) d='39'+d; return d; }
 function summary(g){
   const tot = g.orders.reduce((t,o)=>t+o.euro,0), kg = g.orders.reduce((t,o)=>t+o.kg,0), due = g.orders.filter(o=>!o.pagato).reduce((t,o)=>t+o.euro,0);
   const nome = (g.nome||'').split(' ')[0];
   const righe = g.orders.slice().sort((a,b)=>String(a.cognome).localeCompare(String(b.cognome),'it'))
-    .map(o => `• ${o.nome} ${o.cognome}: ${sacchi(o)} = ${o.kg} kg, ${eur(o.euro)} ${o.pagato?'(pagato)':'(da pagare)'}${o.consegnato?' – consegnato':''}`);
+    .map(o => `• ${o.nome} ${o.cognome}: ${sacchi(o)} = ${o.kg} kg, ${eur(o.euro)} ${o.pagato?'(pagato)':'(da pagare)'}${o.consegnato?' – consegnato':isFull(o)?' – pronto per il ritiro':''}`);
   const rate = rateOf(g), guad = rate ? `\nLa tua quota (${eur(rate)} al kg): ${eur(kg*rate)}` : '';
   return `Ciao ${nome}! Ecco il riepilogo delle castagne Castagnacopo ${anno} ordinate tramite te:\n\n${righe.join('\n') || 'Nessun ordine per ora.'}\n\nTotale: ${kg} kg, ${eur(tot)}\nDa incassare: ${eur(due)}${guad}${g.ref && g.ref.tk ? `\n\nPuoi segnare chi ha pagato e chi ha ritirato qui:\n${SITE}/riscossioni.html?k=${g.ref.tk}` : ''}\n\nGrazie!`;
 }
@@ -324,8 +348,8 @@ function csvOf(list, name){
 function filtered(){
   const f = $('q').value.trim().toLowerCase(), fr = $('fRef').value, st = $('fSt').value;
   return D.orders.filter(o => (!f || [o.nome,o.cognome,o.telefono,o.contatto].join(' ').toLowerCase().includes(f))
-      && (!fr || groupKey(o)===fr) && (st!=='np' || !o.pagato) && (st!=='nc' || !o.consegnato))
-    .sort((a,b)=>{const x=a[sortK],y=b[sortK];return (typeof x==='number'||typeof x==='boolean'?(+x)-(+y):String(x??'').localeCompare(String(y??''),'it'))*sortDir;});
+      && (!fr || groupKey(o)===fr) && (st!=='np' || !o.pagato) && (st!=='nc' || !o.consegnato) && (st!=='np2' || (!isFull(o) && !o.consegnato)) && (st!=='pr' || (isFull(o) && !o.consegnato)))
+    .sort((a,b)=>{const x=sortK==='pronti'?nS(a,'r')/Math.max(1,nS(a,'q')):a[sortK],y=sortK==='pronti'?nS(b,'r')/Math.max(1,nS(b,'q')):b[sortK];return (typeof x==='number'||typeof x==='boolean'?(+x)-(+y):String(x??'').localeCompare(String(y??''),'it'))*sortDir;});
 }
 
 function render(){
@@ -401,17 +425,26 @@ function render(){
   const cur = $('fRef').value;
   $('fRef').innerHTML = '<option value="">Tutti i referenti</option>' + G.filter(g=>g.orders.length).map(g=>`<option value="${esc(g.key)}" ${g.key===cur?'selected':''}>${esc(g.nome)}</option>`).join('');
 
+  // preparatori
+  const PR = D.preparatori || [];
+  $('prepTb').innerHTML = PR.map(p => `<tr><td><b>${esc(p.nome)}</b></td><td class="n">${D.orders.filter(o=>isFull(o)&&o.prepBy===p.nome).length}</td>
+    <td class="noprint"><div class="acts"><button class="btn sm ghost" data-pa="link" data-c="${esc(p.code)}">Copia link</button>
+    <button class="btn sm ghost" data-pa="edit" data-c="${esc(p.code)}">Modifica</button>
+    <button class="btn sm danger ghost" data-pa="del" data-c="${esc(p.code)}">Elimina</button></div></td></tr>`).join('')
+    || '<tr><td colspan="3" class="muted">Nessun preparatore. Aggiungine uno qui sotto e mandagli il suo link.</td></tr>';
+
   // ordini
   const list = filtered();
   $('tb').innerHTML = list.map(o=>`<tr class="${sel.has(o.id)?'sel':''} ${o.pagato&&o.consegnato?'done':''}"><td class="noprint"><input type="checkbox" data-id="${esc(o.id)}" ${sel.has(o.id)?'checked':''} aria-label="Seleziona ${esc(o.nome)} ${esc(o.cognome)}"></td>
     <td>${esc(fmtD(o.data))}</td><td>${esc(o.cognome)}</td><td>${esc(o.nome)}</td><td>${esc(o.telefono)}</td><td>${esc(o.contatto)}</td>
     <td class="n">${o.q1||''}</td><td class="n">${o.q3||''}</td><td class="n">${o.q5||''}</td><td class="n">${o.q10||''}</td>
     <td class="n"><b>${o.kg}</b></td><td class="n">${eur(o.euro)}</td>
+    <td class="c">${prBadge(o)}</td>
     <td class="c"><input type="checkbox" data-f="pagato" data-id="${esc(o.id)}" ${o.pagato?'checked':''} aria-label="Pagato"></td>
     <td class="c"><input type="checkbox" data-f="consegnato" data-id="${esc(o.id)}" ${o.consegnato?'checked':''} aria-label="Consegnato"></td>
-    <td class="note">${esc(o.note)}</td></tr>`).join('') || '<tr><td colspan="15" class="muted">Nessun ordine.</td></tr>';
+    <td class="note">${esc(o.note)}</td></tr>`).join('') || '<tr><td colspan="16" class="muted">Nessun ordine.</td></tr>';
   const fl = $('q').value.trim() || $('fRef').value || $('fSt').value;
-  $('tf').innerHTML = `<tr><td class="noprint"></td><td colspan="5">Totale${fl?' (filtrato)':''}</td><td class="n">${sum('q1',list)}</td><td class="n">${sum('q3',list)}</td><td class="n">${sum('q5',list)}</td><td class="n">${sum('q10',list)}</td><td class="n">${sum('kg',list)}</td><td class="n">${eur(sum('euro',list))}</td><td class="c">${list.filter(o=>o.pagato).length}</td><td class="c">${list.filter(o=>o.consegnato).length}</td><td></td></tr>`;
+  $('tf').innerHTML = `<tr><td class="noprint"></td><td colspan="5">Totale${fl?' (filtrato)':''}</td><td class="n">${sum('q1',list)}</td><td class="n">${sum('q3',list)}</td><td class="n">${sum('q5',list)}</td><td class="n">${sum('q10',list)}</td><td class="n">${sum('kg',list)}</td><td class="n">${eur(sum('euro',list))}</td><td class="c">${list.filter(isFull).length}</td><td class="c">${list.filter(o=>o.pagato).length}</td><td class="c">${list.filter(o=>o.consegnato).length}</td><td></td></tr>`;
   $('all').checked = list.length>0 && list.every(o=>sel.has(o.id));
   ['mkPaid','mkDel','delSel'].forEach(id=>$(id).disabled = sel.size===0);
   $('selInfo').textContent = sel.size ? `${sel.size} selezionat${sel.size===1?'o':'i'}` : 'Seleziona uno o più ordini per le azioni';
@@ -519,6 +552,29 @@ $('rYes').onclick = async () => {
   const c=rPending; rPending=null; $('rconfirm').classList.remove('on'); if(!c) return;
   try{ const j = await post({action:'refDelete', code:c}); D.referenti=j.referenti; toast('Referente eliminato'); render(); }
   catch(x){ toast('Non eliminato: '+x.message); }
+};
+
+/* ----- preparatori ----- */
+let pEdit = '';
+$('prepTb').onclick = async e => {
+  const b = e.target.closest('button[data-pa]'); if(!b) return;
+  const p = (D.preparatori||[]).find(x=>x.code===b.dataset.c); if(!p) return;
+  if (b.dataset.pa==='link') copy(`${SITE}/preparazione.html?k=${p.tk}`, 'Link di preparazione copiato');
+  if (b.dataset.pa==='edit'){ pEdit=p.code; $('pfNome').value=p.nome; $('pfGo').textContent='Salva modifiche'; $('pfCancel').hidden=false; $('pfNome').focus(); }
+  if (b.dataset.pa==='del'){
+    if (b.dataset.sure!=='1'){ b.dataset.sure='1'; b.textContent='Sicuro? Clicca ancora'; setTimeout(()=>{ b.dataset.sure=''; b.textContent='Elimina'; },3000); return; }
+    try{ const j = await post({action:'prepDelete', code:p.code}); D.preparatori=j.preparatori; render(); toast('Preparatore eliminato: il suo link non funziona più'); }
+    catch(x){ toast('Non eliminato: '+x.message); }
+  }
+};
+function resetPf(){ pEdit=''; $('pf').reset(); $('pfGo').textContent='Aggiungi preparatore'; $('pfCancel').hidden=true; }
+$('pfCancel').onclick = resetPf;
+$('pf').onsubmit = async e => {
+  e.preventDefault();
+  const nome=$('pfNome').value.trim(); if(!nome) return toast('Scrivi il nome');
+  try{ const j = await post({action:'prepSave', code:pEdit, nome}); const was=pEdit; D.preparatori=j.preparatori; resetPf(); render();
+    toast(was ? 'Preparatore aggiornato' : 'Preparatore aggiunto: copia il suo link e mandaglielo'); }
+  catch(x){ toast('Non salvato: '+x.message); }
 };
 
 /* ----- generale ----- */
