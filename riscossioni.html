@@ -139,20 +139,34 @@ function prepLine(o){
   return t;
 }
 const TK = new URLSearchParams(location.search).get('k') || '';
+// Google a volte risponde con una pagina di errore invece dei dati: riprova da solo qualche volta
+async function apiFetch(url, opts, tries = 3){
+  let last;
+  for (let i = 0; i < tries; i++){
+    try{
+      const r = await fetch(url, opts); const t = await r.text();
+      try { return JSON.parse(t); } catch(e){ last = e; }
+    }catch(e){ last = e; }
+    if (i < tries-1) await new Promise(res => setTimeout(res, 1000 * (i+1)));
+  }
+  throw new Error('Il server non risponde in questo momento. Riprova tra qualche secondo.');
+}
+
 let D = {orders:[]}, filter = '', asking = '';
 
 function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('on'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove('on'),2200); }
 
 async function load(anno){
   try{
-    const j = await fetch(SCRIPT_URL+'?action=mine&t='+encodeURIComponent(TK)+(anno?'&anno='+anno:'')).then(r=>r.json());
+    const j = await apiFetch(SCRIPT_URL+'?action=mine&t='+encodeURIComponent(TK)+(anno?'&anno='+anno:''));
     if(!j.ok) throw new Error(j.error||'Errore');
     D = j;
     $('title').textContent = 'Ciao ' + j.nome.split(' ')[0] + '!';
     $('sub').textContent = `Ordini arrivati tramite te nel ${j.anno}. Tocca "Pagato" o "Ritirato" per segnarli.`;
     if (j.anni && j.anni.length > 1){ $('anno').hidden=false; $('anno').innerHTML = j.anni.map(a=>`<option ${a===j.anno?'selected':''}>${a}</option>`).join(''); }
     $('app').hidden = false; render();
-  }catch(e){ $('sub').textContent=''; $('err').hidden=false; $('err').textContent = TK ? e.message : 'Questo link non è completo. Chiedi il tuo link personale a chi organizza.'; }
+  }catch(e){ $('sub').textContent=''; $('err').hidden=false; $('err').textContent = TK ? e.message : 'Questo link non è completo. Chiedi il tuo link personale a chi organizza.';
+    if (TK && /server/.test(e.message)) { const b=document.createElement('button'); b.textContent='Riprova'; b.style.cssText='margin-left:8px;padding:6px 12px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit;font:inherit;cursor:pointer'; b.onclick=()=>{ $('err').hidden=true; $('sub').textContent='Caricamento…'; load(); }; $('err').appendChild(b); } }
 }
 
 function render(){
@@ -200,8 +214,8 @@ $('list').onclick = async e => {
     if (c.dataset.no) { asking = ''; return render(); }
     const id = c.dataset.yes, o = D.orders.find(x=>x.id===id); c.disabled = true; c.textContent = 'Annullo…';
     try{
-      const j = await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body:JSON.stringify({action:'mineDelete', t:TK, anno:D.anno, ids:[id]})}).then(r=>r.json());
+      const j = await apiFetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body:JSON.stringify({action:'mineDelete', t:TK, anno:D.anno, ids:[id]})}, 1);
       if(!j.ok || !j.deleted) throw new Error(j.error||'non annullato');
       D.orders = D.orders.filter(x=>x.id!==id); asking=''; render(); toast(`Ordine di ${o?o.nome:''} annullato`);
     }catch(x){ asking=''; render(); toast(/consegnato/.test(x.message) ? x.message : 'Non annullato, riprova'); }
@@ -212,8 +226,8 @@ $('list').onclick = async e => {
   const f = b.dataset.f, v = !o[f];
   o[f] = v; render();
   try{
-    const j = await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({action:'mineFlag', t:TK, anno:D.anno, ids:[o.id], field:f, value:v})}).then(r=>r.json());
+    const j = await apiFetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'mineFlag', t:TK, anno:D.anno, ids:[o.id], field:f, value:v})});
     if(!j.ok || !j.updated) throw new Error(j.error||'non salvato');
     toast(`${o.nome}: ${f==='pagato'?(v?'pagato':'da pagare'):(v?'ritirato':'da ritirare')}`);
   }catch(x){ o[f] = !v; render(); toast('Non salvato, riprova'); }
