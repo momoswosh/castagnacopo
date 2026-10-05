@@ -365,11 +365,11 @@ footer{text-align:center;margin-top:28px}
 </main>
 
 <script>
-// >>> Incolla qui l'URL dell'App web di Google Apps Script <<<
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0vL3szFbifKWk9gxrhQu1z3SU_Bb4As-VRUbYAAYcqGuq3JDfdtm2xBUimVSI2q-2/exec';
+// Indirizzo del backend (Cloudflare Worker)
+const SCRIPT_URL = 'https://castagnacopo.maurizio-covarelli.workers.dev/api';
 
 const SIZES = [1, 3, 5, 10];
-// Google a volte risponde con una pagina di errore invece dei dati: riprova da solo qualche volta
+// se il server risponde con un errore invece dei dati, riprova da solo qualche volta
 async function apiFetch(url, opts, tries = 3){
   let last;
   for (let i = 0; i < tries; i++){
