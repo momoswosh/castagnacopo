@@ -136,8 +136,8 @@ async function load(anno){
 
 function status(o){
   const n = tot(o,'q'), r = tot(o,'r');
-  if (o.consegnato) return `<span class="st">Già ritirato</span>`;
-  if (isFull(o)) return `<span class="st full">✓ Pronto${o.prontoDal?' · ritiro dal '+fmtDay(o.prontoDal):''}</span>`;
+  if (o.consegnato) return `<span class="st">Già consegnato</span>`;
+  if (isFull(o)) return `<span class="st full">✓ Pronto${o.prontoDal?' · ritiro da '+fmtDay(o.prontoDal):''}</span>`;
   if (r) return `<span class="st part">Pronti ${r} di ${n}</span>`;
   return `<span class="st">Da preparare</span>`;
 }
@@ -161,7 +161,7 @@ function render(){
           <span class="step"><button data-d="-1" data-s="${s}" ${r<=0||o.consegnato?'disabled':''} aria-label="Uno in meno da ${s} kg">−</button>
           <output><b>${r}</b> / ${q}</output>
           <button data-d="1" data-s="${s}" ${r>=q||o.consegnato?'disabled':''} aria-label="Uno in più da ${s} kg">+</button></span></div>`; }).join('')}</div>
-      ${o.consegnato ? '' : `<label class="dal ${isFull(o)&&!o.prontoDal?'warn':''}">${isFull(o)&&!o.prontoDal?'Scegli da quando si può ritirare:':'Ritiro dal'}
+      ${o.consegnato ? '' : `<label class="dal ${isFull(o)&&!o.prontoDal?'warn':''}">${isFull(o)&&!o.prontoDal?'Scegli da quando si può ritirare:':'Ritiro da'}
         <input type="date" data-dal value="${esc(o.prontoDal||'')}" aria-label="Data da cui si può ritirare"></label>
       <div class="acts">
         ${isFull(o) ? `<button class="btn ghost" data-all="0">Rimetti da preparare</button>` : `<button class="btn" data-all="1">✓ Tutto pronto</button>`}
@@ -178,7 +178,7 @@ function save(o){
         body:JSON.stringify({action:'prepSet', t:TK, anno:D.anno, id:o.id, r, dal:o.prontoDal||''})});
       if(!j.ok) throw new Error(j.error||'non salvato');
       SZ.forEach(s=>o['r'+s]=j['r'+s]); o.prontoDal=j.prontoDal; saving[o.id]='Salvato';
-      if (isFull(o)) toast(o.prontoDal ? `${o.nome} ${o.cognome}: pronto, ritiro dal ${fmtDay(o.prontoDal)}` : `${o.nome} ${o.cognome}: pronto. Ora scegli la data di ritiro`);
+      if (isFull(o)) toast(o.prontoDal ? `${o.nome} ${o.cognome}: pronto, ritiro da ${fmtDay(o.prontoDal)}` : `${o.nome} ${o.cognome}: pronto. Ora scegli la data di ritiro`);
     }catch(x){ saving[o.id]=''; toast('Non salvato: '+x.message); load(D.anno); return; }
     render(); setTimeout(()=>{ if(saving[o.id]==='Salvato'){ saving[o.id]=''; render(); } }, 1800);
   }, 700);
