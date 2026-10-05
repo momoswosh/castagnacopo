@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#7b3f1d">
+<title>Castagnacopo – Preparazione sacchetti</title>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f7f1e8;--card:#fffdf9;--ink:#2b1d14;--muted:#7a6656;--line:#e6d9c8;--brand:#7b3f1d;--accent:#c98a3c;--ok:#3f7a3a;--err:#a8322a}
+@media (prefers-color-scheme:dark){:root{--bg:#1b140f;--card:#251b14;--ink:#f3e9dd;--muted:#b9a593;--line:#3a2c21;--brand:#d98b52;--accent:#e0a85a;--ok:#8fcf86;--err:#f08a80}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif}
+.wrap{max-width:620px;margin:0 auto;padding:22px 16px 48px}
+header{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+header img{width:48px;height:48px}
+h1{font-family:Fraunces,Georgia,serif;font-weight:800;color:var(--brand);margin:0;font-size:1.7rem;line-height:1.1}
+.sub{color:var(--muted);margin:2px 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.todo{margin-bottom:14px}
+.todo small{display:block;color:var(--muted);font-size:.78rem;margin-bottom:8px}
+.sizes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sz{text-align:center;background:var(--bg);border-radius:12px;padding:8px 4px}
+.sz b{display:block;font-family:Fraunces,Georgia,serif;font-size:1.5rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.sz span{font-size:.78rem;color:var(--muted)}
+.prog{margin-top:10px;font-size:.88rem;color:var(--muted)}
+.prog b{color:var(--ink)}
+.bar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:6px 0 10px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--ink);padding:8px 12px;font:500 .88rem Inter,sans-serif;cursor:pointer}
+.seg button.on{background:var(--brand);color:#fff}
+select,input{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;min-width:0}
+#q{flex:1 1 140px}
+.list{display:grid;gap:10px}
+.o{display:grid;gap:10px}
+.o.full{border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
+.o.gone{opacity:.55}
+.top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.o h3{margin:0;font-size:1.05rem}
+.o .det{color:var(--muted);font-size:.85rem}
+.st{font-size:.78rem;font-weight:600;padding:3px 9px;border-radius:99px;white-space:nowrap;background:var(--bg);color:var(--muted)}
+.st.part{background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--ink)}
+.st.full{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.rows{display:grid;gap:6px}
+.line{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 10px;border-radius:10px;background:var(--bg)}
+.line .lbl{font-weight:600}
+.line .lbl small{font-weight:400;color:var(--muted);margin-left:6px}
+.step{display:flex;align-items:center;gap:6px}
+.step button{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:600 1.1rem Inter,sans-serif;cursor:pointer;line-height:1}
+.step button:disabled{opacity:.35;cursor:default}
+.step output{min-width:58px;text-align:center;font-variant-numeric:tabular-nums}
+.step output b{font-size:1.05rem}
+.line.done .step output b{color:var(--ok)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:0;border-radius:10px;padding:9px 14px;font:600 .88rem Inter,sans-serif;cursor:pointer;background:var(--ok);color:#fff}
+.btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.saving{font-size:.8rem;color:var(--muted);margin-left:auto}
+.empty{text-align:center;color:var(--muted);padding:26px 10px}
+.err{color:var(--err)}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><img src="logo.svg" alt=""><div><h1 id="title">Preparazione sacchetti</h1></div></header>
+  <p class="sub" id="sub">Caricamento…</p>
+
+  <div id="app" hidden>
+    <div class="card todo">
+      <small>Sacchetti ancora da preparare</small>
+      <div class="sizes" id="todo"></div>
+      <div class="prog" id="prog"></div>
+    </div>
+    <div class="bar">
+      <div class="seg" role="group" aria-label="Filtro">
+        <button class="on" data-f="todo">Da preparare</button><button data-f="full">Pronti</button><button data-f="">Tutti</button>
+      </div>
+      <input id="q" placeholder="Cerca nome…" aria-label="Cerca per nome">
+      <select id="anno" aria-label="Anno" hidden></select>
+    </div>
+    <div class="list" id="list"></div>
+  </div>
+  <p class="err" id="err" hidden></p>
+  <footer>Castagnacopo · le castagne di Caprese Michelangelo</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0vL3szFbifKWk9gxrhQu1z3SU_Bb4As-VRUbYAAYcqGuq3JDfdtm2xBUimVSI2q-2/exec';
+const SZ = [1,3,5,10];
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const TK = new URLSearchParams(location.search).get('k') || '';
+const tot = (o,p) => SZ.reduce((t,s)=>t+(+o[p+s]||0),0);
+const isFull = o => tot(o,'q')>0 && SZ.every(s=>(+o['r'+s]||0)===(+o['q'+s]||0));
+const fmtDay = d => { const m=String(d||'').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}` : ''; };
+let D = {orders:[]}, filter = 'todo', timers = {}, saving = {};
+
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('on'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove('on'),2200); }
+
+async function load(anno){
+  try{
+    const j = await fetch(SCRIPT_URL+'?action=prep&t='+encodeURIComponent(TK)+(anno?'&anno='+anno:'')).then(r=>r.json());
+    if(!j.ok) throw new Error(j.error||'Errore');
+    D = j;
+    $('title').textContent = 'Ciao ' + j.nome.split(' ')[0] + '!';
+    $('sub').textContent = `Sacchetti da preparare per gli ordini del ${j.anno}. Usa + e − oppure "Tutto pronto": i referenti lo vedono subito.`;
+    if (j.anni && j.anni.length > 1){ $('anno').hidden=false; $('anno').innerHTML = j.anni.map(a=>`<option ${a===j.anno?'selected':''}>${a}</option>`).join(''); }
+    $('app').hidden = false; render();
+  }catch(e){ $('sub').textContent=''; $('err').hidden=false; $('err').textContent = TK ? e.message : 'Questo link non è completo. Chiedi il tuo link personale a chi organizza.'; }
+}
+
+function status(o){
+  const n = tot(o,'q'), r = tot(o,'r');
+  if (o.consegnato) return `<span class="st">Già ritirato</span>`;
+  if (isFull(o)) return `<span class="st full">✓ Pronto${o.prontoDal?' dal '+fmtDay(o.prontoDal):''}</span>`;
+  if (r) return `<span class="st part">Pronti ${r} di ${n}</span>`;
+  return `<span class="st">Da preparare</span>`;
+}
+
+function render(){
+  const act = D.orders.filter(o=>!o.consegnato);
+  $('todo').innerHTML = SZ.map(s=>{ const left = act.reduce((t,o)=>t+Math.max(0,(+o['q'+s]||0)-(+o['r'+s]||0)),0);
+    return `<div class="sz"><b>${left}</b><span>da ${s} kg</span></div>`; }).join('');
+  const full = act.filter(isFull).length;
+  $('prog').innerHTML = `Ordini pronti: <b>${full} su ${act.length}</b>`;
+
+  const f = $('q').value.trim().toLowerCase();
+  const list = D.orders.filter(o => (filter==='todo' ? (!o.consegnato && !isFull(o)) : filter==='full' ? (isFull(o) || o.consegnato) : true)
+      && (!f || `${o.nome} ${o.cognome} ${o.contatto}`.toLowerCase().includes(f)))
+    .sort((a,b)=> String(a.data).localeCompare(String(b.data)));
+  $('list').innerHTML = list.map(o => `
+    <div class="card o ${isFull(o)?'full':''} ${o.consegnato?'gone':''}" data-o="${esc(o.id)}">
+      <div class="top"><div><h3>${esc(o.nome)} ${esc(o.cognome)}</h3><div class="det">tramite ${esc(o.contatto||'—')} · ${o.kg} kg</div></div>${status(o)}</div>
+      <div class="rows">${SZ.filter(s=>o['q'+s]).map(s=>{ const q=+o['q'+s], r=+o['r'+s]||0;
+        return `<div class="line ${r===q?'done':''}"><span class="lbl">${s} kg<small>${q} sacchett${q===1?'o':'i'}</small></span>
+          <span class="step"><button data-d="-1" data-s="${s}" ${r<=0||o.consegnato?'disabled':''} aria-label="Uno in meno da ${s} kg">−</button>
+          <output><b>${r}</b> / ${q}</output>
+          <button data-d="1" data-s="${s}" ${r>=q||o.consegnato?'disabled':''} aria-label="Uno in più da ${s} kg">+</button></span></div>`; }).join('')}</div>
+      ${o.consegnato ? '' : `<div class="acts">
+        ${isFull(o) ? `<button class="btn ghost" data-all="0">Rimetti da preparare</button>` : `<button class="btn" data-all="1">✓ Tutto pronto</button>`}
+        <span class="saving">${saving[o.id]||''}</span></div>`}
+    </div>`).join('') || `<div class="card empty">${D.orders.length ? (filter==='todo' ? 'Tutto preparato, ottimo lavoro!' : 'Nessun ordine in questo elenco.') : 'Ancora nessun ordine.'}</div>`;
+}
+
+function save(o){
+  clearTimeout(timers[o.id]); saving[o.id]='…'; render();
+  timers[o.id] = setTimeout(async ()=>{
+    const r = {}; SZ.forEach(s=>r[s]=+o['r'+s]||0);
+    try{
+      const j = await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body:JSON.stringify({action:'prepSet', t:TK, anno:D.anno, id:o.id, r})}).then(x=>x.json());
+      if(!j.ok) throw new Error(j.error||'non salvato');
+      SZ.forEach(s=>o['r'+s]=j['r'+s]); o.prontoDal=j.prontoDal; saving[o.id]='Salvato';
+      if (isFull(o)) toast(`${o.nome} ${o.cognome}: pronto per il ritiro`);
+    }catch(x){ saving[o.id]=''; toast('Non salvato: '+x.message); load(D.anno); return; }
+    render(); setTimeout(()=>{ if(saving[o.id]==='Salvato'){ saving[o.id]=''; render(); } }, 1800);
+  }, 700);
+}
+
+$('list').onclick = e => {
+  const card = e.target.closest('[data-o]'); if(!card) return;
+  const o = D.orders.find(x=>x.id===card.dataset.o); if(!o || o.consegnato) return;
+  const b = e.target.closest('button'); if(!b) return;
+  if (b.dataset.all){ SZ.forEach(s=>o['r'+s] = b.dataset.all==='1' ? (+o['q'+s]||0) : 0); return save(o); }
+  if (b.dataset.s){ const s=b.dataset.s; o['r'+s] = Math.max(0, Math.min(+o['q'+s]||0, (+o['r'+s]||0) + +b.dataset.d)); save(o); }
+};
+document.querySelector('.seg').onclick = e => {
+  const b = e.target.closest('button'); if(!b) return;
+  filter = b.dataset.f; document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on', x===b)); render();
+};
+$('q').oninput = render;
+$('anno').onchange = e => load(e.target.value);
+load();
+</script>
+</body>
+</html>
