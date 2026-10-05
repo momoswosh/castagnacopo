@@ -122,7 +122,7 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:24px}
 <div class="toast" id="toast"></div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0vL3szFbifKWk9gxrhQu1z3SU_Bb4As-VRUbYAAYcqGuq3JDfdtm2xBUimVSI2q-2/exec';
+const SCRIPT_URL = 'https://castagnacopo.maurizio-covarelli.workers.dev/api';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const eur = n => (n||0).toLocaleString('it-IT',{style:'currency',currency:'EUR'});
@@ -150,7 +150,7 @@ function prepLine(o){
   return t;
 }
 const TK = new URLSearchParams(location.search).get('k') || '';
-// Google a volte risponde con una pagina di errore invece dei dati: riprova da solo qualche volta
+// se il server risponde con un errore invece dei dati, riprova da solo qualche volta
 async function apiFetch(url, opts, tries = 3){
   let last;
   for (let i = 0; i < tries; i++){
