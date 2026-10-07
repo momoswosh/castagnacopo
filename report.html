@@ -207,6 +207,37 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);cursor:poi
     </div>
 
     <div class="card mb">
+      <div class="bar">
+        <h2 style="margin:0">Dettaglio ordini</h2>
+        <div class="tools noprint">
+          <select id="fRef" aria-label="Filtra per referente"><option value="">Tutti i referenti</option></select>
+          <select id="fSt" aria-label="Filtra per stato"><option value="">Tutti</option><option value="np">Da pagare</option><option value="nc">Da consegnare</option><option value="np2">Da preparare</option><option value="pr">Pronti da ritirare</option></select>
+          <input id="q" placeholder="Cerca nome…" style="width:150px">
+        </div>
+      </div>
+      <div class="bar noprint">
+        <span class="muted" id="selInfo">Seleziona uno o più ordini per le azioni</span>
+        <div class="tools">
+          <button class="btn sm ghost" id="mkPaid" disabled>Segna pagati</button>
+          <button class="btn sm ghost" id="mkDel" disabled>Segna consegnati</button>
+          <button class="btn sm danger ghost" id="delSel" disabled>Cancella selezionati</button>
+          <button class="btn sm danger ghost" id="delAll">Cancella tutto l'anno</button>
+        </div>
+      </div>
+      <div class="confirm noprint" id="confirm"><span id="confirmTxt"></span><span style="display:flex;gap:8px"><button class="btn ghost" id="cNo">Annulla</button><button class="btn danger" id="cYes">Sì, cancella</button></span></div>
+      <div class="tw"><table>
+        <thead><tr>
+          <th class="nosort noprint"><input type="checkbox" id="all" aria-label="Seleziona tutti"></th>
+          <th data-k="data">Data</th><th data-k="cognome">Cognome</th><th data-k="nome">Nome</th><th data-k="telefono">Telefono</th><th data-k="contatto">Contatto</th>
+          <th class="n" data-k="q1">1 kg</th><th class="n" data-k="q3">3 kg</th><th class="n" data-k="q5">5 kg</th><th class="n" data-k="q10">10 kg</th>
+          <th class="n" data-k="kg">Kg</th><th class="n" data-k="euro">Euro</th>
+          <th class="c" data-k="pronti">Pronti</th><th class="c" data-k="pagato">Pagato</th><th class="c" data-k="consegnato">Consegn.</th><th data-k="note">Note</th>
+        </tr></thead>
+        <tbody id="tb"></tbody><tfoot id="tf"></tfoot>
+      </table></div>
+    </div>
+
+    <div class="card mb">
       <div class="bar"><h2 style="margin:0">Referenti</h2><span class="hint">Il link personale compila da solo il contatto. Il riepilogo si apre in WhatsApp già scritto.</span></div>
       <div class="confirm noprint" id="rconfirm"><span id="rconfirmTxt"></span><span style="display:flex;gap:8px"><button class="btn ghost" id="rNo">Annulla</button><button class="btn danger" id="rYes">Sì, elimina</button></span></div>
       <div class="tw"><table>
@@ -247,37 +278,6 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);cursor:poi
         <button class="btn" type="button" id="tgRelink">Ricollega gruppo</button>
         <button class="btn ghost" type="button" id="tgTest">Manda prova</button>
       </div>
-    </div>
-
-    <div class="card">
-      <div class="bar">
-        <h2 style="margin:0">Dettaglio ordini</h2>
-        <div class="tools noprint">
-          <select id="fRef" aria-label="Filtra per referente"><option value="">Tutti i referenti</option></select>
-          <select id="fSt" aria-label="Filtra per stato"><option value="">Tutti</option><option value="np">Da pagare</option><option value="nc">Da consegnare</option><option value="np2">Da preparare</option><option value="pr">Pronti da ritirare</option></select>
-          <input id="q" placeholder="Cerca nome…" style="width:150px">
-        </div>
-      </div>
-      <div class="bar noprint">
-        <span class="muted" id="selInfo">Seleziona uno o più ordini per le azioni</span>
-        <div class="tools">
-          <button class="btn sm ghost" id="mkPaid" disabled>Segna pagati</button>
-          <button class="btn sm ghost" id="mkDel" disabled>Segna consegnati</button>
-          <button class="btn sm danger ghost" id="delSel" disabled>Cancella selezionati</button>
-          <button class="btn sm danger ghost" id="delAll">Cancella tutto l'anno</button>
-        </div>
-      </div>
-      <div class="confirm noprint" id="confirm"><span id="confirmTxt"></span><span style="display:flex;gap:8px"><button class="btn ghost" id="cNo">Annulla</button><button class="btn danger" id="cYes">Sì, cancella</button></span></div>
-      <div class="tw"><table>
-        <thead><tr>
-          <th class="nosort noprint"><input type="checkbox" id="all" aria-label="Seleziona tutti"></th>
-          <th data-k="data">Data</th><th data-k="cognome">Cognome</th><th data-k="nome">Nome</th><th data-k="telefono">Telefono</th><th data-k="contatto">Contatto</th>
-          <th class="n" data-k="q1">1 kg</th><th class="n" data-k="q3">3 kg</th><th class="n" data-k="q5">5 kg</th><th class="n" data-k="q10">10 kg</th>
-          <th class="n" data-k="kg">Kg</th><th class="n" data-k="euro">Euro</th>
-          <th class="c" data-k="pronti">Pronti</th><th class="c" data-k="pagato">Pagato</th><th class="c" data-k="consegnato">Consegn.</th><th data-k="note">Note</th>
-        </tr></thead>
-        <tbody id="tb"></tbody><tfoot id="tf"></tfoot>
-      </table></div>
     </div>
     <p class="muted" style="font-size:.8rem" id="upd"></p>
   </div>
