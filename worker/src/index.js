@@ -139,6 +139,47 @@ async function sendTelegram(env, title, message) {
   }
   return { ok: out.every(x => x.ok), results: out };
 }
+// Stato del collegamento: nome del gruppo (o della chat) a cui arrivano gli avvisi
+async function tgStatus(env) {
+  const p = await getProps(env);
+  if (!p.tg_token) return { ok: true, linked: false, error: 'Bot Telegram non impostato' };
+  if (!p.tg_chat) return { ok: true, linked: false };
+  const chats = [];
+  for (const id of String(p.tg_chat).split(',').map(x => x.trim()).filter(Boolean)) {
+    const j = await (await fetch('https://api.telegram.org/bot' + p.tg_token + '/getChat?chat_id=' + encodeURIComponent(id))).json();
+    chats.push(j.ok ? { id, title: j.result.title || [j.result.first_name, j.result.last_name].filter(Boolean).join(' '), type: j.result.type }
+                    : { id, error: j.description || 'non raggiungibile' });
+  }
+  return { ok: true, linked: chats.some(c => !c.error), chats };
+}
+
+// Ricollega: cerca l'ultimo gruppo in cui è stato scritto /start@bot (o in cui il bot è stato aggiunto) e lo salva
+async function tgRelink(env) {
+  const p = await getProps(env);
+  if (!p.tg_token) return { ok: false, error: 'Bot Telegram non impostato' };
+  const api = 'https://api.telegram.org/bot' + p.tg_token + '/';
+  const j = await (await fetch(api + 'getUpdates')).json();
+  if (!j.ok) return { ok: false, error: 'Telegram: ' + (j.description || 'errore') };
+  const ups = j.result || [];
+  let found = null;
+  for (const u of [...ups].reverse()) {
+    const m = u.message, mc = u.my_chat_member;
+    if (m && m.migrate_to_chat_id) { found = { id: String(m.migrate_to_chat_id), title: m.chat.title }; break; }
+    if (m && /group/.test(m.chat.type) && (/^\/start/.test(m.text || '') || (m.new_chat_members || []).some(x => x.is_bot))) {
+      found = { id: String(m.chat.id), title: m.chat.title }; break;
+    }
+    if (mc && /group/.test(mc.chat.type) && /member|administrator/.test(mc.new_chat_member.status)) {
+      found = { id: String(mc.chat.id), title: mc.chat.title }; break;
+    }
+  }
+  if (!found) return { ok: false, error: 'Nessun gruppo trovato: aggiungi il bot al gruppo, scrivi /start nel gruppo e riprova.' };
+  await setProp(env, 'tg_chat', found.id);
+  // segna come letti i messaggi già usati
+  if (ups.length) await fetch(api + 'getUpdates?offset=' + (ups[ups.length - 1].update_id + 1)).catch(() => {});
+  const test = await sendTelegram(env, 'Castagnacopo: gruppo collegato', 'Da ora gli avvisi degli ordini arrivano qui.');
+  return { ok: true, chat: found.id, title: found.title, test: test.ok };
+}
+
 function notify(env, ctx, subject, body) {
   // non blocca la risposta: l'avviso parte dopo
   ctx.waitUntil(sendTelegram(env, subject, body).catch(e => setProp(env, 'tg_last_error', new Date().toISOString() + ' ' + e).catch(() => {})));
@@ -410,6 +451,8 @@ async function handlePost(env, ctx, request) {
     if (d.action === 'prepSave') return prepSave(env, d);
     if (d.action === 'prepDelete') return prepDelete(env, d);
     if (d.action === 'notifyTest') return sendTelegram(env, 'Castagnacopo: prova', 'Gli avvisi funzionano.');
+    if (d.action === 'tgStatus') return tgStatus(env);
+    if (d.action === 'tgRelink') return tgRelink(env);
     return { ok: false, error: 'Azione sconosciuta' };
   }
   return order(env, ctx, d);
