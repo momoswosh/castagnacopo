@@ -235,6 +235,20 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--brand);cursor:poi
       </form>
     </div>
 
+    <div class="card mb noprint">
+      <div class="bar"><h2 style="margin:0">Avvisi Telegram</h2><span class="hint">Nuovi ordini e ordini annullati arrivano nel gruppo Telegram tramite il bot @castagnacopo_bot.</span></div>
+      <p id="tgSt" style="margin:0 0 10px">Controllo il collegamento…</p>
+      <ol class="hint" style="margin:0 0 12px;padding-left:18px;line-height:1.6">
+        <li>Aggiungi <b>@castagnacopo_bot</b> al gruppo che deve ricevere gli avvisi (anche se è già dentro va bene).</li>
+        <li>Nel gruppo scrivi <b>/start@castagnacopo_bot</b></li>
+        <li>Premi <b>Ricollega gruppo</b>: arriva un messaggio di prova nel gruppo.</li>
+      </ol>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" type="button" id="tgRelink">Ricollega gruppo</button>
+        <button class="btn ghost" type="button" id="tgTest">Manda prova</button>
+      </div>
+    </div>
+
     <div class="card">
       <div class="bar">
         <h2 style="margin:0">Dettaglio ordini</h2>
@@ -590,10 +604,30 @@ $('pf').onsubmit = async e => {
   catch(x){ toast('Non salvato: '+x.message); }
 };
 
+/* ----- avvisi Telegram ----- */
+function tgShow(j){
+  const el=$('tgSt'); const ok=(j.chats||[]).filter(c=>!c.error);
+  if (j.error) { el.innerHTML='⚠️ '+esc(j.error); return; }
+  if (!j.linked) { el.innerHTML='⚠️ <b>Nessun gruppo collegato</b>: gli avvisi non arrivano. Segui i passi qui sotto.'; return; }
+  el.innerHTML='✅ Gli avvisi arrivano a: <b>'+ok.map(c=>esc(c.title||c.id)).join(', ')+'</b>'
+    + ((j.chats||[]).some(c=>c.error) ? ' <span class="err">(una chat non è più raggiungibile: ricollega il gruppo)</span>' : '');
+}
+async function tgLoad(){ try{ tgShow(await post({action:'tgStatus'})); }catch(x){ $('tgSt').textContent='Stato non disponibile: '+x.message; } }
+$('tgRelink').onclick = async () => {
+  const b=$('tgRelink'); b.disabled=true; b.textContent='Cerco il gruppo…';
+  try{ const j=await post({action:'tgRelink'}); toast('Collegato al gruppo «'+(j.title||j.chat)+'»'+(j.test?': controlla il messaggio di prova':'')); await tgLoad(); }
+  catch(x){ toast(x.message); $('tgSt').innerHTML='⚠️ '+esc(x.message); }
+  finally{ b.disabled=false; b.textContent='Ricollega gruppo'; }
+};
+$('tgTest').onclick = async () => {
+  try{ await post({action:'notifyTest'}); toast('Messaggio di prova inviato'); }
+  catch(x){ toast('Prova non riuscita: '+x.message); }
+};
+
 /* ----- generale ----- */
 $('lf').onsubmit = async e => {
   e.preventDefault(); key = $('pw').value; $('le').textContent = 'Verifica…';
-  try { await load(); try{sessionStorage.setItem('ck',key);}catch(x){} }
+  try { await load(); tgLoad(); try{sessionStorage.setItem('ck',key);}catch(x){} }
   catch(x){ $('le').textContent = x.message; }
 };
 $('refresh').onclick = () => load(anno).catch(x=>toast(x.message));
@@ -601,7 +635,7 @@ $('anno').onchange = e => load(e.target.value).catch(x=>toast(x.message));
 $('q').oninput = render; $('fRef').onchange = render; $('fSt').onchange = render;
 document.querySelector('#tb').closest('table').querySelector('thead').onclick = e => { const k=e.target.dataset.k; if(!k) return; sortDir = sortK===k ? -sortDir : 1; sortK=k; render(); };
 $('csv').onclick = () => csvOf(D.orders, 'castagnacopo-ordini-'+anno+'.csv');
-if (key) load().catch(()=>{ $('login').style.display='block'; });
+if (key) load().then(tgLoad).catch(()=>{ $('login').style.display='block'; });
 </script>
 </body>
 </html>
